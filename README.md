@@ -1,6 +1,6 @@
-# Buildspace API
+# Avera API
 
-This is a **standalone Node.js 22 and Hono backend** for Buildspace. It contains no Manus code, credentials, OAuth session, database connection, or hosted-service dependency. It is intended to be kept in a separate repository from the Next.js frontend.
+This is a **standalone Node.js 22 and Hono backend** for Avera. It contains no Manus code, credentials, OAuth session, database connection, or hosted-service dependency. It is intended to be kept in a separate repository from the Next.js frontend.
 
 The API is a modular monolith: one HTTP and WebSocket process, one background-worker process, PostgreSQL for durable data, Redis for realtime fan-out and queue work, and server-side adapters for calls, AI, storage, and integrations. This is deliberately sized for an initial product of roughly 50 active users while retaining a credible path to scale.
 
