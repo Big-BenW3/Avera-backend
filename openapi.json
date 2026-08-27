@@ -1,0 +1,2925 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Buildspace API",
+    "version": "0.1.0",
+    "description": "Separate standalone backend contract. Full request schemas live alongside Hono routes in src/modules."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health"
+    },
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Discovery"
+    },
+    {
+      "name": "People"
+    },
+    {
+      "name": "Safety"
+    },
+    {
+      "name": "Ideas"
+    },
+    {
+      "name": "Spaces"
+    },
+    {
+      "name": "Workspace"
+    },
+    {
+      "name": "Chat"
+    },
+    {
+      "name": "Notifications"
+    },
+    {
+      "name": "Realtime and AI"
+    },
+    {
+      "name": "Calls"
+    },
+    {
+      "name": "AI"
+    },
+    {
+      "name": "Files"
+    },
+    {
+      "name": "Integrations"
+    },
+    {
+      "name": "Realtime"
+    }
+  ],
+  "paths": {
+    "/health/live": {
+      "get": {
+        "summary": "Process liveness",
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "PostgreSQL and Redis readiness",
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/health/database": {
+      "get": {
+        "summary": "Database readiness",
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sign-up": {
+      "post": {
+        "summary": "Create a password account",
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sign-in": {
+      "post": {
+        "summary": "Sign in or receive an MFA challenge",
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/verify": {
+      "post": {
+        "summary": "Complete MFA sign-in",
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Current account",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sign-out": {
+      "post": {
+        "summary": "Revoke browser session",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/profile": {
+      "patch": {
+        "summary": "Update profile",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/enroll": {
+      "post": {
+        "summary": "Start TOTP enrollment",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/confirm": {
+      "post": {
+        "summary": "Confirm TOTP factor",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/discover/announcements": {
+      "get": {
+        "summary": "Active dashboard announcements",
+        "tags": [
+          "Discovery"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/discover/ideas": {
+      "get": {
+        "summary": "Trending public Ideas",
+        "tags": [
+          "Discovery"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/discover/spaces": {
+      "get": {
+        "summary": "Public active Spaces",
+        "tags": [
+          "Discovery"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/discover/following": {
+      "get": {
+        "summary": "Followed Spaces",
+        "tags": [
+          "Discovery"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "summary": "Search public Ideas and Spaces",
+        "tags": [
+          "Discovery"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/people": {
+      "get": {
+        "summary": "People directory",
+        "tags": [
+          "People"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/people/{handle}": {
+      "get": {
+        "summary": "Public profile",
+        "tags": [
+          "People"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/me/blocks/{userId}": {
+      "post": {
+        "summary": "Block a user",
+        "tags": [
+          "Safety"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Unblock a user",
+        "tags": [
+          "Safety"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/reports": {
+      "post": {
+        "summary": "Report public content",
+        "tags": [
+          "Safety"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/ideas/{ideaId}": {
+      "get": {
+        "summary": "Idea detail and visible comments",
+        "tags": [
+          "Ideas"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/ideas": {
+      "post": {
+        "summary": "Create an Idea",
+        "tags": [
+          "Ideas"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/ideas/{ideaId}/bookmark": {
+      "post": {
+        "summary": "Add bookmark",
+        "tags": [
+          "Ideas"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove bookmark",
+        "tags": [
+          "Ideas"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/ideas/{ideaId}/interest": {
+      "post": {
+        "summary": "Add interest",
+        "tags": [
+          "Ideas"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove interest",
+        "tags": [
+          "Ideas"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/ideas/{ideaId}/offers": {
+      "post": {
+        "summary": "Offer to help",
+        "tags": [
+          "Ideas"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "get": {
+        "summary": "Creator-only offers",
+        "tags": [
+          "Ideas"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/ideas/{ideaId}/comments": {
+      "post": {
+        "summary": "Comment on an Idea",
+        "tags": [
+          "Ideas"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/ideas/{ideaId}/comments/{commentId}/hide": {
+      "post": {
+        "summary": "Hide a comment",
+        "tags": [
+          "Ideas"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/ideas/{ideaId}/promote": {
+      "post": {
+        "summary": "Create a Space from an Idea",
+        "tags": [
+          "Ideas",
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces": {
+      "post": {
+        "summary": "Create a Space",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}": {
+      "get": {
+        "summary": "Space and team",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/overview": {
+      "get": {
+        "summary": "Compact workspace overview",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/settings": {
+      "patch": {
+        "summary": "Update Space settings",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/follow": {
+      "post": {
+        "summary": "Follow public Space",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Unfollow public Space",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/invites": {
+      "post": {
+        "summary": "Create invite",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/join-requests": {
+      "post": {
+        "summary": "Request to join",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/join-requests/{requestId}": {
+      "patch": {
+        "summary": "Review join request",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/bans/{userId}": {
+      "post": {
+        "summary": "Ban member",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/planning-notes": {
+      "get": {
+        "summary": "List planning-notes",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create planning-notes",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/roadmap-items": {
+      "get": {
+        "summary": "List roadmap-items",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create roadmap-items",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/tasks": {
+      "get": {
+        "summary": "List tasks",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create tasks",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/planning-notes/{noteId}/promote": {
+      "post": {
+        "summary": "Promote note to task",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{taskId}": {
+      "get": {
+        "summary": "Task detail",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update task or board state",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{taskId}/comments": {
+      "post": {
+        "summary": "Comment on task",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/activity": {
+      "get": {
+        "summary": "Space activity feed",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/chat": {
+      "get": {
+        "summary": "Space chat history",
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/chat/messages": {
+      "post": {
+        "summary": "Send Space chat message",
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/dm/requests": {
+      "post": {
+        "summary": "Send direct-message request",
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "get": {
+        "summary": "Message requests",
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/dm/requests/{requestId}": {
+      "patch": {
+        "summary": "Accept or decline message request",
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/dm/conversations": {
+      "get": {
+        "summary": "Direct conversations",
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversationId}/messages": {
+      "get": {
+        "summary": "Direct message history",
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "post": {
+        "summary": "Send direct message",
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/messages/{messageId}/read": {
+      "post": {
+        "summary": "Mark message read",
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "summary": "Notifications",
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/{notificationId}/read": {
+      "post": {
+        "summary": "Mark notification read",
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "post": {
+        "summary": "Mark all notifications read",
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/calls": {
+      "get": {
+        "summary": "Read calls",
+        "tags": [
+          "Realtime and AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "post": {
+        "summary": "Write calls",
+        "tags": [
+          "Realtime and AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/ai/settings": {
+      "get": {
+        "summary": "Read ai/settings",
+        "tags": [
+          "Realtime and AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "put": {
+        "summary": "Write ai/settings",
+        "tags": [
+          "Realtime and AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/ai/runs": {
+      "get": {
+        "summary": "Read ai/runs",
+        "tags": [
+          "Realtime and AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "post": {
+        "summary": "Write ai/runs",
+        "tags": [
+          "Realtime and AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/integrations": {
+      "get": {
+        "summary": "Read integrations",
+        "tags": [
+          "Realtime and AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "post": {
+        "summary": "Write integrations",
+        "tags": [
+          "Realtime and AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/design-links": {
+      "get": {
+        "summary": "Read design-links",
+        "tags": [
+          "Realtime and AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      },
+      "post": {
+        "summary": "Write design-links",
+        "tags": [
+          "Realtime and AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/calls/{callId}/join": {
+      "post": {
+        "summary": "Issue LiveKit join token",
+        "tags": [
+          "Calls"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/calls/{callId}/end": {
+      "post": {
+        "summary": "End call",
+        "tags": [
+          "Calls"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/runs/{runId}": {
+      "get": {
+        "summary": "AI run and citations",
+        "tags": [
+          "AI"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/spaces/{slug}/files/upload-url": {
+      "post": {
+        "summary": "Issue signed upload URL",
+        "tags": [
+          "Files"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/files/{fileId}/download-url": {
+      "get": {
+        "summary": "Issue signed download URL",
+        "tags": [
+          "Files"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/github/webhook": {
+      "post": {
+        "summary": "GitHub signed webhook receiver",
+        "tags": [
+          "Integrations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/realtime": {
+      "get": {
+        "summary": "Authenticated WebSocket upgrade",
+        "tags": [
+          "Realtime"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "buildspace_session"
+      }
+    }
+  }
+}
