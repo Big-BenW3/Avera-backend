@@ -31,11 +31,13 @@ export const optionalAuth: MiddlewareHandler<AppEnv> = async (context, next) => 
       })
       .from(sessions)
       .innerJoin(users, eq(sessions.userId, users.id))
-      .where(and(
-        eq(sessions.tokenHash, sha256(token)),
-        gt(sessions.expiresAt, new Date()),
-        isNull(sessions.revokedAt),
-      ))
+      .where(
+        and(
+          eq(sessions.tokenHash, sha256(token)),
+          gt(sessions.expiresAt, new Date()),
+          isNull(sessions.revokedAt),
+        ),
+      )
       .limit(1);
 
     const activeSession = record[0];
@@ -46,13 +48,24 @@ export const optionalAuth: MiddlewareHandler<AppEnv> = async (context, next) => 
 };
 
 export const requireAuth: MiddlewareHandler<AppEnv> = async (context, next) => {
+  // Run the optional lookup, then reject the request when no user is attached.
   await optionalAuth(context, async () => undefined);
   if (!context.get("auth")) {
-    return context.json({ error: { code: "UNAUTHENTICATED", message: "Sign in is required.", requestId: context.get("requestId") } }, 401);
+    return context.json(
+      {
+        error: {
+          code: "UNAUTHENTICATED",
+          message: "Sign in is required.",
+          requestId: context.get("requestId"),
+        },
+      },
+      401,
+    );
   }
   await next();
 };
 
+// Shortcut that throws when a protected route is missing its authenticated user.
 export function currentUserId(context: Context<AppEnv>): string {
   const auth = context.get("auth");
   if (!auth) throw new Error("Authenticated route did not provide an auth context.");

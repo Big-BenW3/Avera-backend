@@ -23,7 +23,10 @@ export const environmentSchema = z.object({
   AUTH_SESSION_TTL_HOURS: z.coerce.number().int().positive().default(168),
   AUTH_REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(30),
   AUTH_COOKIE_NAME: z.string().min(1).default("buildspace_session"),
-  AUTH_SECURE_COOKIES: z.enum(["true", "false"]).default("false").transform((value) => value === "true"),
+  AUTH_SECURE_COOKIES: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
   S3_REGION: z.string().default("us-east-1"),
   S3_BUCKET: z.string().optional(),
   S3_ENDPOINT: optionalUrl,

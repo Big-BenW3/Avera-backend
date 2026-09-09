@@ -11,36 +11,129 @@ import { requireAuth, currentUserId } from "../../middleware/auth.js";
 import type { AppEnv } from "../../types.js";
 import { canAccess, resolveSpaceAccess } from "../spaces/access.js";
 
-const figmaLinkInput = z.object({ externalFileId: z.string().trim().min(1).max(255), url: z.string().url(), title: z.string().trim().min(1).max(180) });
+const figmaLinkInput = z.object({
+  externalFileId: z.string().trim().min(1).max(255),
+  url: z.string().url(),
+  title: z.string().trim().min(1).max(180),
+});
 
-/** OAuth redirect/callback routes are intentionally not activated until real provider settings exist. */
 export function integrationRoutes() {
   const app = new Hono<AppEnv>();
+  // Integration endpoints require a signed-in user (except the GitHub webhook).
   app.use("/*", requireAuth);
+
+  // List the connected third-party integrations for a Space.
   app.get("/spaces/:slug/integrations", async (context) => {
-    const access = await resolveSpaceAccess(context.get("database"), context.req.param("slug"), currentUserId(context));
-    if (!canAccess(access, currentUserId(context), "integrations:view")) return context.json({ error: { code: "FORBIDDEN", message: "Integration access is required.", requestId: context.get("requestId") } }, 403);
-    const items = await context.get("database").db.select().from(integrationConnections).where(eq(integrationConnections.spaceId, access!.spaceId));
+    const access = await resolveSpaceAccess(
+      context.get("database"),
+      context.req.param("slug"),
+      currentUserId(context),
+    );
+    if (!canAccess(access, currentUserId(context), "integrations:view"))
+      return context.json(
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Integration access is required.",
+            requestId: context.get("requestId"),
+          },
+        },
+        403,
+      );
+    const items = await context
+      .get("database")
+      .db.select()
+      .from(integrationConnections)
+      .where(eq(integrationConnections.spaceId, access!.spaceId));
     return context.json({ items: items.map(({ secretCiphertext: _secret, ...safe }) => safe) });
   });
+  // List the design links for a Space.
   app.get("/spaces/:slug/design-links", async (context) => {
-    const access = await resolveSpaceAccess(context.get("database"), context.req.param("slug"), currentUserId(context));
-    if (!canAccess(access, currentUserId(context), "design:view")) return context.json({ error: { code: "FORBIDDEN", message: "Design access is required.", requestId: context.get("requestId") } }, 403);
-    return context.json({ items: await context.get("database").db.select().from(designLinks).where(eq(designLinks.spaceId, access!.spaceId)) });
+    const access = await resolveSpaceAccess(
+      context.get("database"),
+      context.req.param("slug"),
+      currentUserId(context),
+    );
+    if (!canAccess(access, currentUserId(context), "design:view"))
+      return context.json(
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Design access is required.",
+            requestId: context.get("requestId"),
+          },
+        },
+        403,
+      );
+    return context.json({
+      items: await context
+        .get("database")
+        .db.select()
+        .from(designLinks)
+        .where(eq(designLinks.spaceId, access!.spaceId)),
+    });
   });
+  // Add a design link and tell the AI indexer to pick it up.
   app.post("/spaces/:slug/design-links", async (context) => {
     const parsed = figmaLinkInput.safeParse(await context.req.json());
-    const access = await resolveSpaceAccess(context.get("database"), context.req.param("slug"), currentUserId(context));
-    if (!canAccess(access, currentUserId(context), "design:edit")) return context.json({ error: { code: "FORBIDDEN", message: "Design access is required.", requestId: context.get("requestId") } }, 403);
-    if (!parsed.success) return context.json({ error: { code: "VALIDATION_ERROR", message: "Design link is invalid.", requestId: context.get("requestId") } }, 400);
-    const [link] = await context.get("database").db.insert(designLinks).values({ spaceId: access!.spaceId, provider: "figma", ...parsed.data }).returning();
-    await context.get("database").db.insert(outboxEvents).values({ type: "ai.index_requested", aggregateType: "design_link", aggregateId: link!.id, payload: { spaceId: access!.spaceId, sourceType: "design" } });
+    const access = await resolveSpaceAccess(
+      context.get("database"),
+      context.req.param("slug"),
+      currentUserId(context),
+    );
+    if (!canAccess(access, currentUserId(context), "design:edit"))
+      return context.json(
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Design access is required.",
+            requestId: context.get("requestId"),
+          },
+        },
+        403,
+      );
+    if (!parsed.success)
+      return context.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Design link is invalid.",
+            requestId: context.get("requestId"),
+          },
+        },
+        400,
+      );
+    const [link] = await context
+      .get("database")
+      .db.insert(designLinks)
+      .values({ spaceId: access!.spaceId, provider: "figma", ...parsed.data })
+      .returning();
+    await context
+      .get("database")
+      .db.insert(outboxEvents)
+      .values({
+        type: "ai.index_requested",
+        aggregateType: "design_link",
+        aggregateId: link!.id,
+        payload: { spaceId: access!.spaceId, sourceType: "design" },
+      });
     return context.json({ link }, 201);
   });
+  // Accept signed GitHub webhook payloads (signature is required by design).
   app.post("/integrations/github/webhook", async (context) => {
     // Production validates the GitHub signature before enqueuing; never process an unsigned webhook.
     const signature = context.req.header("x-hub-signature-256");
-    if (!signature) return context.json({ error: { code: "WEBHOOK_SIGNATURE_REQUIRED", message: "A GitHub webhook signature is required.", requestId: context.get("requestId") } }, 401);
+    if (!signature)
+      return context.json(
+        {
+          error: {
+            code: "WEBHOOK_SIGNATURE_REQUIRED",
+            message: "A GitHub webhook signature is required.",
+            requestId: context.get("requestId"),
+          },
+        },
+        401,
+      );
     return context.json({ accepted: true }, 202);
   });
   return app;

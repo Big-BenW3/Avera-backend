@@ -7,13 +7,35 @@ import { describe, expect, it } from "vitest";
 import { canAccess } from "./access.js";
 
 describe("Space authorisation", () => {
+  // The owner bypasses role checks entirely.
   it("always permits the Space owner", () => {
-    expect(canAccess({ spaceId: "s", slug: "space", ownerUserId: "owner", membershipStatus: null, permissions: [] }, "owner", "tasks:edit")).toBe(true);
+    expect(
+      canAccess(
+        {
+          spaceId: "s",
+          slug: "space",
+          ownerUserId: "owner",
+          membershipStatus: null,
+          permissions: [],
+        },
+        "owner",
+        "tasks:edit",
+      ),
+    ).toBe(true);
   });
+  // Collaborators need an active membership plus the exact permission (or wildcard).
   it("requires an active membership and an explicit permission for collaborators", () => {
-    const access = { spaceId: "s", slug: "space", ownerUserId: "owner", membershipStatus: "active" as const, permissions: ["tasks:view"] };
+    const access = {
+      spaceId: "s",
+      slug: "space",
+      ownerUserId: "owner",
+      membershipStatus: "active" as const,
+      permissions: ["tasks:view"],
+    };
     expect(canAccess(access, "member", "tasks:view")).toBe(true);
     expect(canAccess(access, "member", "tasks:edit")).toBe(false);
-    expect(canAccess({ ...access, membershipStatus: "removed" }, "member", "tasks:view")).toBe(false);
+    expect(canAccess({ ...access, membershipStatus: "removed" }, "member", "tasks:view")).toBe(
+      false,
+    );
   });
 });

@@ -5,17 +5,20 @@
 
 import type { Redis } from "ioredis";
 
-/** A small broker that fans Redis Pub/Sub events to local WebSocket clients. */
+// A small broker that fans Redis Pub/Sub events to local WebSocket clients.
 export class RealtimeGateway {
+  // Map of channel name -> set of sockets currently subscribed to it.
   private readonly channels = new Map<string, Set<{ send(message: string): void }>>();
 
   constructor(private readonly subscriber: Redis) {
+    // Forward every Redis message to the matching local sockets.
     this.subscriber.on("message", (redisChannel: string, raw: string) => {
       const channel = redisChannel.replace(/^buildspace:/, "");
       for (const socket of this.channels.get(channel) ?? []) socket.send(raw);
     });
   }
 
+  // Add a socket to a channel, opening the Redis subscription on first listener.
   async subscribe(channel: string, socket: { send(message: string): void }): Promise<void> {
     const listeners = this.channels.get(channel) ?? new Set();
     listeners.add(socket);
@@ -23,6 +26,7 @@ export class RealtimeGateway {
     if (listeners.size === 1) await this.subscriber.subscribe(`buildspace:${channel}`);
   }
 
+  // Remove a socket from every channel, closing unused Redis subscriptions.
   async unsubscribeAll(socket: { send(message: string): void }): Promise<void> {
     for (const [channel, listeners] of this.channels) {
       listeners.delete(socket);

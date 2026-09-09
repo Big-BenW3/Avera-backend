@@ -16,6 +16,7 @@ export type AuthenticatedUser = {
   displayName: string;
 };
 
+// Everything a route handler can read from the request context.
 export type AppVariables = {
   config: AppConfig;
   database: Database;
@@ -25,4 +26,5 @@ export type AppVariables = {
   auth?: AuthenticatedUser;
 };
 
+// The environment type Hono uses when typing context.get() / context.set().
 export type AppEnv = { Variables: AppVariables };

@@ -7,15 +7,22 @@ import { describe, expect, it } from "vitest";
 import { decryptSecret, encryptSecret, randomToken, sha256 } from "./crypto.js";
 
 describe("backend cryptography helpers", () => {
+  // Hashing is deterministic, so the same token always produces the same digest.
   it("hashes opaque sessions deterministically without retaining their raw token", () => {
     const token = randomToken();
     expect(token.length).toBeGreaterThan(30);
     expect(sha256(token)).toHaveLength(64);
     expect(sha256(token)).toBe(sha256(token));
   });
+  // And encryption hides the secret until it is decrypted with the same server secret.
   it("encrypts an MFA secret at rest and decrypts it only with the server secret", () => {
-    const sealed = encryptSecret("MFA-SECRET", "a-long-server-secret-that-exceeds-thirty-two-characters");
+    const sealed = encryptSecret(
+      "MFA-SECRET",
+      "a-long-server-secret-that-exceeds-thirty-two-characters",
+    );
     expect(sealed).not.toContain("MFA-SECRET");
-    expect(decryptSecret(sealed, "a-long-server-secret-that-exceeds-thirty-two-characters")).toBe("MFA-SECRET");
+    expect(decryptSecret(sealed, "a-long-server-secret-that-exceeds-thirty-two-characters")).toBe(
+      "MFA-SECRET",
+    );
   });
 });

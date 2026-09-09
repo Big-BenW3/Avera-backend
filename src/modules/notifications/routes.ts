@@ -11,21 +11,47 @@ import type { AppEnv } from "../../types.js";
 
 export function notificationRoutes() {
   const app = new Hono<AppEnv>();
+  // Notification endpoints require a signed-in user.
   app.use("/*", requireAuth);
+
+  // List the signed-in user's notification inbox (optionally unread only).
   app.get("/notifications", async (context) => {
     const unreadOnly = context.req.query("unread") === "true";
-    const items = await context.get("database").db.select().from(notifications)
-      .where(and(eq(notifications.userId, currentUserId(context)), unreadOnly ? isNull(notifications.readAt) : undefined))
-      .orderBy(desc(notifications.createdAt)).limit(100);
+    const items = await context
+      .get("database")
+      .db.select()
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, currentUserId(context)),
+          unreadOnly ? isNull(notifications.readAt) : undefined,
+        ),
+      )
+      .orderBy(desc(notifications.createdAt))
+      .limit(100);
     return context.json({ items });
   });
+  // Mark one notification as read.
   app.post("/notifications/:notificationId/read", async (context) => {
     const { db } = context.get("database");
-    await db.update(notifications).set({ readAt: new Date() }).where(and(eq(notifications.id, context.req.param("notificationId")), eq(notifications.userId, currentUserId(context))));
+    await db
+      .update(notifications)
+      .set({ readAt: new Date() })
+      .where(
+        and(
+          eq(notifications.id, context.req.param("notificationId")),
+          eq(notifications.userId, currentUserId(context)),
+        ),
+      );
     return context.body(null, 204);
   });
+  // Mark every unread notification as read.
   app.post("/notifications/read-all", async (context) => {
-    await context.get("database").db.update(notifications).set({ readAt: new Date() }).where(and(eq(notifications.userId, currentUserId(context)), isNull(notifications.readAt)));
+    await context
+      .get("database")
+      .db.update(notifications)
+      .set({ readAt: new Date() })
+      .where(and(eq(notifications.userId, currentUserId(context)), isNull(notifications.readAt)));
     return context.body(null, 204);
   });
   return app;

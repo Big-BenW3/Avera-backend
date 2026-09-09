@@ -3,9 +3,9 @@
 | Frontend flow | API routes and realtime events |
 |---|---|
 | Landing, sign-up, sign-in, MFA | `POST /api/v1/auth/sign-up`, `POST /auth/sign-in`, `POST /auth/mfa/verify`, `GET /auth/me`, `POST /auth/sign-out` |
-| Discover dashboard, carousel, active Spaces | `GET /discover/announcements`, `/discover/ideas`, `/discover/spaces`, `/discover/following`, `/search` |
-| Trending Idea hover/bookmark and Idea detail | `POST/DELETE /ideas/:ideaId/bookmark`, `GET /ideas/:ideaId`, `/interest`, `/offers`, `/comments`, `/promote` |
-| People, profiles, blocks, safety | `GET /people`, `/people/:handle`, `POST/DELETE /me/blocks/:userId`, `POST /reports` |
+| Discover dashboard, carousel, active Spaces | `GET /discover/announcements` (public), `/discover/ideas` (auth), `/discover/spaces` (auth), `/discover/following` (auth), `/search` (auth) — see `ROUTE.md` + `docs/tests.md` |
+| Trending Idea hover/bookmark and Idea detail | `GET /ideas/:ideaId` (auth) `POST/DELETE /ideas/:ideaId/bookmark`, `/interest`, `/offers`, `/comments`, `/promote` |
+| People, profiles, blocks, safety | `GET /people` (auth), `/people/:handle` (auth), `POST/DELETE /me/blocks/:userId`, `POST /reports` |
 | Create Space and Hackathon scheduling | `POST /spaces`, `POST /spaces/:slug/join-requests`, planned `/spaces/:slug/timebox` contract backed by `space_timeboxes` |
 | Space overview, team, settings, invites | `GET /spaces/:slug`, `/overview`, `PATCH /settings`, `POST /invites`, join request review, bans, follows |
 | Roadmap, planning notes, tasks, build activities | `GET/POST /spaces/:slug/roadmap-items`, planning notes/promote, `GET/POST /spaces/:slug/tasks`, task patch/comments, `GET /spaces/:slug/activity` |

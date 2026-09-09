@@ -14,27 +14,81 @@ const config = loadConfig();
 const database = createDatabase(config);
 const redisPair = createRedis(config);
 await redisPair.client.connect();
+
+// Pick up due outbox events and process the ones this worker understands.
 async function processOutbox() {
-  const pending = await database.db.select().from(outboxEvents).where(and(isNull(outboxEvents.processedAt), lte(outboxEvents.availableAt, new Date()))).orderBy(outboxEvents.createdAt).limit(25);
+  const pending = await database.db
+    .select()
+    .from(outboxEvents)
+    .where(and(isNull(outboxEvents.processedAt), lte(outboxEvents.availableAt, new Date())))
+    .orderBy(outboxEvents.createdAt)
+    .limit(25);
+
   for (const event of pending) {
     try {
+      // AI runs are executed here, outside the latency-sensitive HTTP process.
       if (event.type === "ai.run") {
         const runId = (event.payload as { runId?: string }).runId;
-        const run = runId ? (await database.db.select().from(aiRuns).where(eq(aiRuns.id, runId)).limit(1))[0] : undefined;
+        const run = runId
+          ? (await database.db.select().from(aiRuns).where(eq(aiRuns.id, runId)).limit(1))[0]
+          : undefined;
+
         if (run) {
-          await database.db.update(aiRuns).set({ status: "running", updatedAt: new Date() }).where(eq(aiRuns.id, run.id));
+          // Mark the run as in progress before calling the model.
+          await database.db
+            .update(aiRuns)
+            .set({ status: "running", updatedAt: new Date() })
+            .where(eq(aiRuns.id, run.id));
+
+          // Ask the model to turn the user prompt into a project-memory answer.
           const prompt = (run.input as { prompt?: string }).prompt ?? "";
-          const output = await new NvidiaAiProvider(config).complete([{ role: "system", content: "You are Buildspace Project Memory. Use only authorised Space sources and state uncertainty clearly." }, { role: "user", content: prompt }]);
-          await database.db.update(aiRuns).set({ status: "completed", output: { content: output.content }, modelId: output.model, inputTokens: output.usage?.promptTokens ?? null, outputTokens: output.usage?.completionTokens ?? null, updatedAt: new Date() }).where(eq(aiRuns.id, run.id));
-          await publishEvent(redisPair.client, { id: event.id, type: "ai.completed", channel: `space:${run.spaceId}`, payload: { runId: run.id }, occurredAt: new Date().toISOString() });
+          const output = await new NvidiaAiProvider(config).complete([
+            {
+              role: "system",
+              content:
+                "You are Buildspace Project Memory. Use only authorised Space sources and state uncertainty clearly.",
+            },
+            { role: "user", content: prompt },
+          ]);
+
+          // Persist the result and notify subscribers through Redis.
+          await database.db
+            .update(aiRuns)
+            .set({
+              status: "completed",
+              output: { content: output.content },
+              modelId: output.model,
+              inputTokens: output.usage?.promptTokens ?? null,
+              outputTokens: output.usage?.completionTokens ?? null,
+              updatedAt: new Date(),
+            })
+            .where(eq(aiRuns.id, run.id));
+          await publishEvent(redisPair.client, {
+            id: event.id,
+            type: "ai.completed",
+            channel: `space:${run.spaceId}`,
+            payload: { runId: run.id },
+            occurredAt: new Date().toISOString(),
+          });
         }
       }
-      await database.db.update(outboxEvents).set({ processedAt: new Date(), attempts: event.attempts + 1 }).where(eq(outboxEvents.id, event.id));
+
+      // Whatever happened, the event is marked processed after the attempt.
+      await database.db
+        .update(outboxEvents)
+        .set({ processedAt: new Date(), attempts: event.attempts + 1 })
+        .where(eq(outboxEvents.id, event.id));
     } catch (error) {
+      // Retry failed events after a short delay so transient errors can recover.
       console.error({ eventId: event.id, error }, "Outbox event failed; it will retry.");
-      await database.db.update(outboxEvents).set({ attempts: event.attempts + 1, availableAt: new Date(Date.now() + 60_000) }).where(eq(outboxEvents.id, event.id));
+      await database.db
+        .update(outboxEvents)
+        .set({ attempts: event.attempts + 1, availableAt: new Date(Date.now() + 60_000) })
+        .where(eq(outboxEvents.id, event.id));
     }
   }
 }
+
+// Run once at startup, then poll for new work every five seconds.
 await processOutbox();
 setInterval(() => void processOutbox(), 5_000);
