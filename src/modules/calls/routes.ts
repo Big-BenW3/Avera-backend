@@ -6,8 +6,16 @@
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
-import { callParticipants, callSessions, outboxEvents, tasks, users } from "../../db/schema.js";
+import {
+  callParticipants,
+  callSessions,
+  outboxEvents,
+  spaces,
+  tasks,
+  users,
+} from "../../db/schema.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
+import { cleanText } from "../../lib/sanitize.js";
 import { opaqueId } from "../../lib/ids.js";
 import type { AppEnv } from "../../types.js";
 import { createLiveKitToken, liveKitConfigured } from "../../providers/livekit.js";
@@ -86,7 +94,7 @@ export function callRoutes() {
       .values({
         spaceId: access!.spaceId,
         startedByUserId: currentUserId(context),
-        title: parsed.data.title,
+        title: cleanText(parsed.data.title, 180),
         taskId: parsed.data.taskId ?? null,
         livekitRoom: `space-${access!.spaceId}-${opaqueId("call")}`,
         status: parsed.data.startsAt ? "scheduled" : "live",
@@ -125,13 +133,15 @@ export function callRoutes() {
         },
         404,
       );
-    const spaceAccess = await db.execute<{ slug: string }>(
-      `select slug from spaces where id = '${call.spaceId}'`,
-    );
-    const access = spaceAccess.rows[0]
+    const spaceAccess = await db
+      .select({ slug: spaces.slug })
+      .from(spaces)
+      .where(eq(spaces.id, call.spaceId))
+      .limit(1);
+    const access = spaceAccess[0]
       ? await resolveSpaceAccess(
           context.get("database"),
-          spaceAccess.rows[0].slug,
+          spaceAccess[0].slug,
           currentUserId(context),
         )
       : null;

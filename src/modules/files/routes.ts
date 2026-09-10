@@ -6,8 +6,9 @@
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
-import { fileLinks, files } from "../../db/schema.js";
+import { fileLinks, files, spaceMemberships, spaces } from "../../db/schema.js";
 import { opaqueId } from "../../lib/ids.js";
+import { isAllowedUploadType, sanitizeFileName } from "../../lib/sanitize.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
 import type { AppEnv } from "../../types.js";
 import { createDownloadUrl, createUploadUrl, storageConfigured } from "../../providers/storage.js";
@@ -60,6 +61,17 @@ export function fileRoutes() {
         },
         400,
       );
+    if (!isAllowedUploadType(parsed.data.contentType))
+      return context.json(
+        {
+          error: {
+            code: "UNSUPPORTED_FILE_TYPE",
+            message: "This file type is not allowed.",
+            requestId: context.get("requestId"),
+          },
+        },
+        400,
+      );
     if (!storageConfigured(context.get("config")))
       return context.json(
         {
@@ -71,7 +83,8 @@ export function fileRoutes() {
         },
         503,
       );
-    const key = `spaces/${access!.spaceId}/${opaqueId("file")}-${parsed.data.fileName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+    const safeName = sanitizeFileName(parsed.data.fileName);
+    const key = `spaces/${access!.spaceId}/${opaqueId("file")}-${safeName}`;
     const [file] = await context
       .get("database")
       .db.insert(files)
@@ -129,18 +142,51 @@ export function fileRoutes() {
         },
         503,
       );
-    // Authorization is resolved through file links by the full implementation; direct file-owner access remains safe for uploaded files.
-    if (file.ownerUserId !== currentUserId(context))
-      return context.json(
-        {
-          error: {
-            code: "FORBIDDEN",
-            message: "File access is required.",
-            requestId: context.get("requestId"),
+    // Owner always allowed; space members allowed via file links.
+    if (file.ownerUserId !== currentUserId(context)) {
+      const links = await context
+        .get("database")
+        .db.select({ spaceId: fileLinks.spaceId })
+        .from(fileLinks)
+        .where(eq(fileLinks.fileId, file.id))
+        .limit(10);
+      let member = false;
+      for (const link of links) {
+        const row = (
+          await context
+            .get("database")
+            .db.select({
+              ownerUserId: spaces.ownerUserId,
+              membershipStatus: spaceMemberships.status,
+            })
+            .from(spaces)
+            .leftJoin(
+              spaceMemberships,
+              and(
+                eq(spaceMemberships.spaceId, spaces.id),
+                eq(spaceMemberships.userId, currentUserId(context)),
+              ),
+            )
+            .where(eq(spaces.id, link.spaceId))
+            .limit(1)
+        )[0];
+        if (row && (row.ownerUserId === currentUserId(context) || row.membershipStatus === "active")) {
+          member = true;
+          break;
+        }
+      }
+      if (!member)
+        return context.json(
+          {
+            error: {
+              code: "FORBIDDEN",
+              message: "File access is required.",
+              requestId: context.get("requestId"),
+            },
           },
-        },
-        403,
-      );
+          403,
+        );
+    }
     return context.json({
       downloadUrl: await createDownloadUrl(context.get("config"), file.objectKey),
     });

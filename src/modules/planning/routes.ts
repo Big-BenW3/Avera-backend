@@ -8,6 +8,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { planningNotes, roadmapItems, tasks } from "../../db/schema.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
+import { cleanText } from "../../lib/sanitize.js";
 import type { AppEnv } from "../../types.js";
 import { recordActivity } from "../activity/service.js";
 import { canAccess, resolveSpaceAccess } from "../spaces/access.js";
@@ -91,7 +92,13 @@ export function planningRoutes() {
     const [note] = await context
       .get("database")
       .db.insert(planningNotes)
-      .values({ ...parsed.data, spaceId: space.spaceId, authorUserId: currentUserId(context) })
+      .values({
+        title: cleanText(parsed.data.title, 180),
+        body: cleanText(parsed.data.body, 4000),
+        color: parsed.data.color ?? "yellow",
+        spaceId: space.spaceId,
+        authorUserId: currentUserId(context),
+      })
       .returning();
     await recordActivity(context.get("database"), {
       spaceId: space.spaceId,
@@ -222,7 +229,13 @@ export function planningRoutes() {
     const [item] = await context
       .get("database")
       .db.insert(roadmapItems)
-      .values({ ...parsed.data, spaceId: space.spaceId })
+      .values({
+        horizon: parsed.data.horizon,
+        title: cleanText(parsed.data.title, 180),
+        description: parsed.data.description ? cleanText(parsed.data.description, 2000) : null,
+        position: parsed.data.position ?? 0,
+        spaceId: space.spaceId,
+      })
       .returning();
     await recordActivity(context.get("database"), {
       spaceId: space.spaceId,

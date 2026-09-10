@@ -18,6 +18,8 @@ import {
   tasks,
 } from "../../db/schema.js";
 import { randomToken, sha256 } from "../../lib/crypto.js";
+import { uuidParam, validationError } from "../../lib/http.js";
+import { cleanText, isSafeExternalUrl } from "../../lib/sanitize.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
 import type { AppEnv } from "../../types.js";
 import { recordActivity } from "../activity/service.js";
@@ -41,7 +43,7 @@ const settingsInput = z.object({
   category: z.string().trim().min(2).max(80).optional(),
 });
 const inviteInput = z.object({
-  email: z.string().email(),
+  email: z.string().email().max(320),
   roleId: z.string().uuid().nullable().optional(),
 });
 const joinRequestInput = z.object({
@@ -88,7 +90,13 @@ export function spaceRoutes() {
     const parsed = spaceInput.safeParse(await context.req.json());
     if (!parsed.success)
       return error(context, "VALIDATION_ERROR", "Space details are invalid.", 400);
-    const input = parsed.data;
+    const input = {
+      ...parsed.data,
+      name: cleanText(parsed.data.name, 140),
+      summary: cleanText(parsed.data.summary, 500),
+      category: cleanText(parsed.data.category, 80),
+      productStage: cleanText(parsed.data.productStage, 48),
+    };
     const owner = currentUserId(context);
     const baseSlug = input.name
       .toLowerCase()
@@ -188,6 +196,8 @@ export function spaceRoutes() {
       return error(context, "FORBIDDEN", "Only Space owners or managers can update settings.", 403);
     const parsed = settingsInput.safeParse(await context.req.json());
     if (!parsed.success) return error(context, "VALIDATION_ERROR", "Settings are invalid.", 400);
+    if (!isSafeExternalUrl(parsed.data.externalUrl ?? null))
+      return error(context, "VALIDATION_ERROR", "External URL must be http(s).", 400);
     const [space] = await context
       .get("database")
       .db.update(spaces)
@@ -352,7 +362,8 @@ export function spaceRoutes() {
   app.post("/spaces/:slug/bans/:userId", async (context) => {
     const access = await requireSpace(context, "members:manage");
     if (!access) return error(context, "FORBIDDEN", "You cannot ban Space members.", 403);
-    const target = context.req.param("userId");
+    const target = uuidParam(context, "userId");
+    if (!target) return validationError(context, "User ID is invalid.");
     await context.get("database").db.transaction(async (transaction) => {
       await transaction
         .insert(spaceBans)

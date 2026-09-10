@@ -19,6 +19,7 @@ import {
   users,
 } from "../../db/schema.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
+import { cleanText } from "../../lib/sanitize.js";
 import type { AppEnv } from "../../types.js";
 import { canAccess, resolveSpaceAccess } from "../spaces/access.js";
 
@@ -151,7 +152,12 @@ export function chatRoutes() {
     const [message] = await context
       .get("database")
       .db.insert(messages)
-      .values({ conversationId, authorUserId: currentUserId(context), ...parsed.data })
+      .values({
+        conversationId,
+        authorUserId: currentUserId(context),
+        body: cleanText(parsed.data.body, 8000),
+        replyToMessageId: parsed.data.replyToMessageId ?? null,
+      })
       .returning();
     await queueMessageEvent(context, conversationId, message!.id);
     return context.json({ message }, 201);
@@ -216,7 +222,7 @@ export function chatRoutes() {
       .values({
         senderUserId: sender,
         recipientUserId: parsed.data.recipientUserId,
-        body: parsed.data.body,
+        body: cleanText(parsed.data.body, 2000),
       })
       .returning();
     await db.insert(outboxEvents).values({
@@ -378,7 +384,12 @@ export function chatRoutes() {
     const [message] = await context
       .get("database")
       .db.insert(messages)
-      .values({ conversationId, authorUserId: currentUserId(context), ...parsed.data })
+      .values({
+        conversationId,
+        authorUserId: currentUserId(context),
+        body: cleanText(parsed.data.body, 8000),
+        replyToMessageId: parsed.data.replyToMessageId ?? null,
+      })
       .returning();
     await queueMessageEvent(context, conversationId, message!.id);
     return context.json({ message }, 201);

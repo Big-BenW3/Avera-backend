@@ -15,6 +15,7 @@ import {
   spaces,
 } from "../../db/schema.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
+import { cleanText } from "../../lib/sanitize.js";
 import type { AppEnv } from "../../types.js";
 
 const createIdeaInput = z.object({
@@ -111,7 +112,13 @@ export function ideaRoutes() {
     const { db } = context.get("database");
     const [idea] = await db
       .insert(ideas)
-      .values({ authorUserId: currentUserId(context), ...parsed.data })
+      .values({
+        authorUserId: currentUserId(context),
+        title: cleanText(parsed.data.title, 180),
+        body: cleanText(parsed.data.body, 6000),
+        category: cleanText(parsed.data.category, 80),
+        lookingFor: parsed.data.lookingFor ? cleanText(parsed.data.lookingFor, 120) : null,
+      })
       .returning();
     return context.json({ idea }, 201);
   });
@@ -196,7 +203,8 @@ export function ideaRoutes() {
       .values({
         ideaId: context.req.param("ideaId"),
         userId: currentUserId(context),
-        ...parsed.data,
+        offer: cleanText(parsed.data.offer, 1000),
+        availability: parsed.data.availability ? cleanText(parsed.data.availability, 80) : null,
       })
       .onConflictDoUpdate({
         target: [ideaOffers.ideaId, ideaOffers.userId],
@@ -226,7 +234,7 @@ export function ideaRoutes() {
       .values({
         ideaId: context.req.param("ideaId"),
         authorUserId: currentUserId(context),
-        body: parsed.data.body,
+        body: cleanText(parsed.data.body, 4000),
       })
       .returning();
     return context.json({ comment }, 201);
@@ -317,8 +325,8 @@ export function ideaRoutes() {
         ownerUserId: currentUserId(context),
         sourceIdeaId: idea.id,
         slug,
-        name: input.data.name,
-        summary: input.data.summary,
+        name: cleanText(input.data.name, 140),
+        summary: cleanText(input.data.summary, 500),
         category: idea.category,
         type: input.data.type,
         visibility: input.data.visibility,

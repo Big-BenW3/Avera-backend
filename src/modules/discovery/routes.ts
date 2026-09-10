@@ -13,6 +13,7 @@ import {
   spaceMemberships,
   spaces,
 } from "../../db/schema.js";
+import { likePattern } from "../../lib/sanitize.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
 import type { AppEnv } from "../../types.js";
 
@@ -127,9 +128,9 @@ export function discoveryRoutes() {
   app.use("/search", requireAuth);
   app.get("/search", async (context) => {
     const { db } = context.get("database");
-    const query = context.req.query("q")?.trim();
+    const query = context.req.query("q")?.trim().slice(0, 120);
     if (!query || query.length < 2) return context.json({ items: [] });
-    const pattern = `%${query}%`;
+    const pattern = likePattern(query);
     const [ideaRows, spaceRows] = await Promise.all([
       db
         .select({

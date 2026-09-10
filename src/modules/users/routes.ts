@@ -7,6 +7,8 @@ import { and, eq, ilike, ne, or } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { userBlocks, users } from "../../db/schema.js";
+import { uuidParam, validationError } from "../../lib/http.js";
+import { likePattern } from "../../lib/sanitize.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
 import type { AppEnv } from "../../types.js";
 
@@ -18,8 +20,9 @@ export function userRoutes() {
 
   // Search the people directory by handle or display name.
   app.get("/people", async (context) => {
-    const query = context.req.query("q")?.trim();
-    const pattern = `%${query ?? ""}%`;
+    const query = context.req.query("q")?.trim().slice(0, 120);
+    if (!query) return context.json({ items: [] });
+    const pattern = likePattern(query);
     const { db } = context.get("database");
     const items = await db
       .select({
@@ -30,9 +33,7 @@ export function userRoutes() {
         skills: users.skills,
       })
       .from(users)
-      .where(
-        query ? or(ilike(users.handle, pattern), ilike(users.displayName, pattern)) : undefined,
-      )
+      .where(or(ilike(users.handle, pattern), ilike(users.displayName, pattern)))
       .limit(50);
     return context.json({ items });
   });
@@ -70,7 +71,8 @@ export function userRoutes() {
   // Block a user so they cannot interact with you (no-op if already blocked).
   app.use("/me/blocks/*", requireAuth);
   app.post("/me/blocks/:userId", async (context) => {
-    const target = context.req.param("userId");
+    const target = uuidParam(context, "userId");
+    if (!target) return validationError(context, "User ID is invalid.");
     const actor = currentUserId(context);
     if (target === actor)
       return context.json(
@@ -83,6 +85,25 @@ export function userRoutes() {
         },
         400,
       );
+    const exists = (
+      await context
+        .get("database")
+        .db.select({ id: users.id })
+        .from(users)
+        .where(eq(users.id, target))
+        .limit(1)
+    )[0];
+    if (!exists)
+      return context.json(
+        {
+          error: {
+            code: "NOT_FOUND",
+            message: "Person not found.",
+            requestId: context.get("requestId"),
+          },
+        },
+        404,
+      );
     await context
       .get("database")
       .db.insert(userBlocks)
@@ -93,15 +114,12 @@ export function userRoutes() {
   // Unblock a previously blocked user.
   app.delete("/me/blocks/:userId", async (context) => {
     const actor = currentUserId(context);
+    const target = uuidParam(context, "userId");
+    if (!target) return validationError(context, "User ID is invalid.");
     await context
       .get("database")
       .db.delete(userBlocks)
-      .where(
-        and(
-          eq(userBlocks.blockerUserId, actor),
-          eq(userBlocks.blockedUserId, context.req.param("userId")),
-        ),
-      );
+      .where(and(eq(userBlocks.blockerUserId, actor), eq(userBlocks.blockedUserId, target)));
     return context.body(null, 204);
   });
   return app;

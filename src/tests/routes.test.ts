@@ -101,8 +101,7 @@ describe("auth lifecycle — signup -> session -> me -> sign-in -> sign-out", ()
     expect(meAfter.status).toBe(401);
   });
 
-  it("POST /auth/sign-up 409 on duplicate, sign-in 401 on bad password", async () => {
-    const h = `dup-${Date.now().toString(36).slice(-5)}`;
+  it("POST /auth/sign-up 409 on duplicate, sign-in 401 on bad password", async () => {    const h = `dup-${Date.now().toString(36).slice(-5)}`;
     const e = `${h}@example.com`;
     const r1 = await ctx.app.request("/api/v1/auth/sign-up", {
       method: "POST",
@@ -124,6 +123,58 @@ describe("auth lifecycle — signup -> session -> me -> sign-in -> sign-out", ()
       body: JSON.stringify({ email: e, password: "wrongpassword123" }),
     });
     expect(bad.status).toBe(401);
+  });
+
+  it("password reset: forgot -> reset -> sign-in with new password, old session revoked", async () => {
+    const h = `pw-${Date.now().toString(36).slice(-5)}`;
+    const e = `${h}@example.com`;
+    const signup = await ctx.app.request("/api/v1/auth/sign-up", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: e, password: "TestPassword123!", handle: h, displayName: h }),
+    });
+    expect(signup.status).toBe(201);
+    const sb: any = await json(signup);
+    createdUserIds.push(sb.user.id);
+    const oldCookie = signup.headers.get("set-cookie") ?? "";
+
+    const forgot = await ctx.app.request("/api/v1/auth/password/forgot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: e }),
+    });
+    expect(forgot.status).toBe(200);
+    const fb: any = await json(forgot);
+    expect(fb.sent).toBe(true);
+    expect(typeof fb.resetTicket).toBe("string");
+
+    // Unknown email stays generic 200 with no ticket.
+    const forgotUnknown = await ctx.app.request("/api/v1/auth/password/forgot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: `nobody-${h}@example.com` }),
+    });
+    expect(forgotUnknown.status).toBe(200);
+    expect((await json(forgotUnknown)).resetTicket).toBeUndefined();
+
+    const reset = await ctx.app.request("/api/v1/auth/password/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ticket: fb.resetTicket, password: "NewPassword123!" }),
+    });
+    expect(reset.status).toBe(200);
+
+    // Old session revoked by the reset.
+    const meOld = await ctx.app.request("/api/v1/auth/me", { headers: { Cookie: oldCookie } });
+    expect(meOld.status).toBe(401);
+
+    // New password works.
+    const signIn = await ctx.app.request("/api/v1/auth/sign-in", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: e, password: "NewPassword123!" }),
+    });
+    expect(signIn.status).toBe(200);
   });
 });
 
@@ -418,7 +469,7 @@ describe("spaces -> planning -> tasks -> activity -> files/integrations/safety",
       headers: { "Content-Type": "application/json", Cookie: cookie },
       body: JSON.stringify({
         entityType: "space",
-        entityId: "00000000-0000-0000-0000-000000000001",
+        entityId: "00000000-0000-4000-8000-000000000001",
         reason: "spam",
       }),
     });

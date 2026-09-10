@@ -3,7 +3,7 @@
   "info": {
     "title": "Buildspace API",
     "version": "0.1.0",
-    "description": "Separate standalone backend contract. Full request schemas live alongside Hono routes in src/modules."
+    "description": "Separate standalone backend contract. Request bodies live in this inventory and mirror the Zod schemas in src/modules."
   },
   "servers": [
     {
@@ -74,6 +74,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -85,6 +91,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -105,6 +114,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -116,6 +131,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -136,6 +154,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -147,6 +171,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -167,6 +194,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -179,8 +212,48 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password",
+                  "displayName",
+                  "handle"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 320
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "maxLength": 256
+                  },
+                  "displayName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "handle": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,39}$"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -198,6 +271,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -210,8 +289,37 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 320
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -229,6 +337,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -241,8 +355,34 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "ticket",
+                  "code"
+                ],
+                "properties": {
+                  "ticket": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -265,6 +405,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -276,6 +422,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -301,6 +450,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -312,6 +467,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -337,6 +495,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -349,8 +513,46 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "displayName"
+                ],
+                "properties": {
+                  "displayName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "bio": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 500
+                  },
+                  "skills": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 50
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -373,6 +575,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -384,6 +592,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -409,6 +620,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -421,8 +638,154 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password/forgot": {
+      "post": {
+        "summary": "Request a password-reset ticket",
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 320
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password/reset": {
+      "post": {
+        "summary": "Reset password with a ticket",
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "ticket",
+                  "password"
+                ],
+                "properties": {
+                  "ticket": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "maxLength": 256
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -440,6 +803,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -451,6 +820,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -464,36 +836,10 @@
         "tags": [
           "Discovery"
         ],
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Validation error"
-          },
-          "401": {
-            "description": "Unauthenticated"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          },
-          "503": {
-            "description": "Dependency not configured or unavailable"
+        "security": [
+          {
+            "sessionCookie": []
           }
-        }
-      }
-    },
-    "/api/v1/discover/spaces": {
-      "get": {
-        "summary": "Public active Spaces",
-        "tags": [
-          "Discovery"
         ],
         "responses": {
           "200": {
@@ -502,6 +848,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -514,10 +866,86 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/discover/spaces": {
+      "get": {
+        "summary": "Public active Spaces",
+        "tags": [
+          "Discovery"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/v1/discover/following": {
@@ -538,6 +966,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -549,6 +983,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -562,12 +999,23 @@
         "tags": [
           "Discovery"
         ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response"
           },
           "201": {
             "description": "Created"
+          },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
           },
           "400": {
             "description": "Validation error"
@@ -581,10 +1029,23 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/v1/people": {
@@ -593,36 +1054,10 @@
         "tags": [
           "People"
         ],
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Validation error"
-          },
-          "401": {
-            "description": "Unauthenticated"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          },
-          "503": {
-            "description": "Dependency not configured or unavailable"
+        "security": [
+          {
+            "sessionCookie": []
           }
-        }
-      }
-    },
-    "/api/v1/people/{handle}": {
-      "get": {
-        "summary": "Public profile",
-        "tags": [
-          "People"
         ],
         "responses": {
           "200": {
@@ -631,6 +1066,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -643,10 +1084,78 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/people/{handle}": {
+      "get": {
+        "summary": "Public profile",
+        "tags": [
+          "People"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "handle",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/v1/me/blocks/{userId}": {
@@ -667,6 +1176,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -679,10 +1194,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       },
       "delete": {
         "summary": "Unblock a user",
@@ -701,6 +1230,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -713,10 +1248,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/reports": {
@@ -737,6 +1286,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -749,8 +1304,54 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "entityType",
+                  "entityId",
+                  "reason"
+                ],
+                "properties": {
+                  "entityType": {
+                    "type": "string",
+                    "enum": [
+                      "idea",
+                      "space",
+                      "profile",
+                      "comment"
+                    ]
+                  },
+                  "entityId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "spam",
+                      "harassment",
+                      "impersonation",
+                      "other"
+                    ]
+                  },
+                  "context": {
+                    "type": "string",
+                    "maxLength": 3000
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -761,12 +1362,23 @@
         "tags": [
           "Ideas"
         ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response"
           },
           "201": {
             "description": "Created"
+          },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
           },
           "400": {
             "description": "Validation error"
@@ -780,10 +1392,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "ideaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/ideas": {
@@ -804,6 +1430,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -816,8 +1448,47 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "body",
+                  "category"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 180
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 6000
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "lookingFor": {
+                    "type": "string",
+                    "maxLength": 120
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -840,6 +1511,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -852,10 +1529,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "ideaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       },
       "delete": {
         "summary": "Remove bookmark",
@@ -874,6 +1565,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -886,10 +1583,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "ideaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/ideas/{ideaId}/interest": {
@@ -910,6 +1621,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -922,10 +1639,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "ideaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       },
       "delete": {
         "summary": "Remove interest",
@@ -944,6 +1675,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -956,10 +1693,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "ideaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/ideas/{ideaId}/offers": {
@@ -980,6 +1731,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -992,8 +1749,46 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "ideaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "offer"
+                ],
+                "properties": {
+                  "offer": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 1000
+                  },
+                  "availability": {
+                    "type": "string",
+                    "maxLength": 80
+                  }
+                }
+              }
+            }
           }
         }
       },
@@ -1014,6 +1809,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1026,10 +1827,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "ideaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/ideas/{ideaId}/comments": {
@@ -1050,6 +1865,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1062,8 +1883,42 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "ideaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "body"
+                ],
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1086,6 +1941,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1098,10 +1959,33 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "ideaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/ideas/{ideaId}/promote": {
@@ -1123,6 +2007,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1135,8 +2025,68 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "ideaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "summary",
+                  "type"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 140
+                  },
+                  "summary": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "startup",
+                      "hackathon",
+                      "open_source",
+                      "client_project",
+                      "personal",
+                      "experiment"
+                    ]
+                  },
+                  "visibility": {
+                    "type": "string",
+                    "enum": [
+                      "public",
+                      "private"
+                    ],
+                    "default": "private"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1159,6 +2109,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1171,8 +2127,78 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "summary",
+                  "category",
+                  "type"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 140
+                  },
+                  "summary": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "startup",
+                      "hackathon",
+                      "open_source",
+                      "client_project",
+                      "personal",
+                      "experiment"
+                    ]
+                  },
+                  "visibility": {
+                    "type": "string",
+                    "enum": [
+                      "public",
+                      "private"
+                    ],
+                    "default": "private"
+                  },
+                  "recruiting": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "productStage": {
+                    "type": "string",
+                    "maxLength": 48,
+                    "default": "exploring"
+                  },
+                  "maxMembers": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "default": 5
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1195,6 +2221,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1207,10 +2239,23 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/v1/spaces/{slug}/overview": {
@@ -1231,6 +2276,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1243,10 +2294,23 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/v1/spaces/{slug}/settings": {
@@ -1267,6 +2331,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1279,8 +2349,60 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "summary": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500
+                  },
+                  "visibility": {
+                    "type": "string",
+                    "enum": [
+                      "public",
+                      "private"
+                    ]
+                  },
+                  "recruiting": {
+                    "type": "boolean"
+                  },
+                  "externalUrl": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uri"
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1303,6 +2425,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1315,10 +2443,23 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "delete": {
         "summary": "Unfollow public Space",
@@ -1337,6 +2478,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1349,10 +2496,23 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/v1/spaces/{slug}/invites": {
@@ -1373,6 +2533,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1385,8 +2551,45 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 320
+                  },
+                  "roleId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1409,6 +2612,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1421,8 +2630,41 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "desiredRole": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1200
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1445,6 +2687,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1457,8 +2705,56 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "accepted",
+                      "declined"
+                    ]
+                  },
+                  "roleId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1481,6 +2777,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1493,10 +2795,32 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/spaces/{slug}/planning-notes": {
@@ -1517,6 +2841,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1529,10 +2859,23 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "post": {
         "summary": "Create planning-notes",
@@ -1551,6 +2894,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1563,8 +2912,57 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "body"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 180
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "color": {
+                    "type": "string",
+                    "enum": [
+                      "yellow",
+                      "blue",
+                      "red",
+                      "green"
+                    ],
+                    "default": "yellow"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1587,6 +2985,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1599,10 +3003,23 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "post": {
         "summary": "Create roadmap-items",
@@ -1621,6 +3038,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1633,8 +3056,58 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "horizon",
+                  "title"
+                ],
+                "properties": {
+                  "horizon": {
+                    "type": "string",
+                    "enum": [
+                      "now",
+                      "next",
+                      "later"
+                    ]
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 180
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "position": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1657,6 +3130,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1669,10 +3148,23 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "post": {
         "summary": "Create tasks",
@@ -1691,6 +3183,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1703,8 +3201,70 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 180
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "area": {
+                    "type": "string",
+                    "default": "Product"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "default": "medium"
+                  },
+                  "assigneeUserId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "roadmapItemId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "dueAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1727,6 +3287,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1739,10 +3305,32 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "noteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/tasks/{taskId}": {
@@ -1763,6 +3351,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1775,10 +3369,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       },
       "patch": {
         "summary": "Update task or board state",
@@ -1797,6 +3405,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1809,8 +3423,80 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 180
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "area": {
+                    "type": "string",
+                    "default": "Product"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "default": "medium"
+                  },
+                  "assigneeUserId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "roadmapItemId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "dueAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "todo",
+                      "in_progress",
+                      "done"
+                    ]
+                  },
+                  "position": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1833,6 +3519,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1845,8 +3537,42 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "body"
+                ],
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1869,6 +3595,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1881,10 +3613,23 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/v1/spaces/{slug}/chat": {
@@ -1905,6 +3650,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1917,10 +3668,23 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/v1/spaces/{slug}/chat/messages": {
@@ -1941,6 +3705,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1953,8 +3723,45 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "body"
+                ],
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8000
+                  },
+                  "replyToMessageId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1977,6 +3784,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -1989,8 +3802,36 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "recipientUserId",
+                  "body"
+                ],
+                "properties": {
+                  "recipientUserId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                }
+              }
+            }
           }
         }
       },
@@ -2011,6 +3852,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2022,6 +3869,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -2047,6 +3897,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2059,8 +3915,44 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "accepted",
+                      "declined"
+                    ]
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -2083,6 +3975,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2094,6 +3992,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -2119,6 +4020,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2131,10 +4038,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       },
       "post": {
         "summary": "Send direct message",
@@ -2153,6 +4074,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2165,8 +4092,46 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "body"
+                ],
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8000
+                  },
+                  "replyToMessageId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -2189,6 +4154,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2201,10 +4172,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/notifications": {
@@ -2225,6 +4210,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2237,10 +4228,27 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "unread",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          }
+        ]
       }
     },
     "/api/v1/notifications/{notificationId}/read": {
@@ -2261,6 +4269,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2273,10 +4287,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "notificationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/notifications/read-all": {
@@ -2297,6 +4325,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2308,6 +4342,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -2317,7 +4354,7 @@
     },
     "/api/v1/spaces/{slug}/calls": {
       "get": {
-        "summary": "Read calls",
+        "summary": "List calls",
         "tags": [
           "Realtime and AI"
         ],
@@ -2333,6 +4370,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2345,13 +4388,26 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "post": {
-        "summary": "Write calls",
+        "summary": "Schedule or start a call",
         "tags": [
           "Realtime and AI"
         ],
@@ -2367,6 +4423,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2379,8 +4441,49 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 180
+                  },
+                  "taskId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -2403,6 +4506,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2415,13 +4524,26 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "put": {
-        "summary": "Write ai/settings",
+        "summary": "Update Project Memory settings",
         "tags": [
           "Realtime and AI"
         ],
@@ -2437,6 +4559,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2449,15 +4577,62 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "enabledSources",
+                  "chatExcluded"
+                ],
+                "properties": {
+                  "enabledSources": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "roadmap",
+                        "tasks",
+                        "activity",
+                        "design",
+                        "build"
+                      ]
+                    }
+                  },
+                  "chatExcluded": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/api/v1/spaces/{slug}/ai/runs": {
       "get": {
-        "summary": "Read ai/runs",
+        "summary": "List AI runs",
         "tags": [
           "Realtime and AI"
         ],
@@ -2473,6 +4648,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2485,13 +4666,26 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "post": {
-        "summary": "Write ai/runs",
+        "summary": "Queue an AI run",
         "tags": [
           "Realtime and AI"
         ],
@@ -2507,6 +4701,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2519,15 +4719,67 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "prompt"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "planning_interview",
+                      "proposal",
+                      "summary",
+                      "task_breakdown",
+                      "memory_question"
+                    ]
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 12000
+                  },
+                  "sourceIds": {
+                    "type": "array",
+                    "maxItems": 30,
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/api/v1/spaces/{slug}/integrations": {
       "get": {
-        "summary": "Read integrations",
+        "summary": "List integrations",
         "tags": [
           "Realtime and AI"
         ],
@@ -2543,6 +4795,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2555,49 +4813,28 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
-      },
-      "post": {
-        "summary": "Write integrations",
-        "tags": [
-          "Realtime and AI"
-        ],
-        "security": [
+        },
+        "parameters": [
           {
-            "sessionCookie": []
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Validation error"
-          },
-          "401": {
-            "description": "Unauthenticated"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          },
-          "503": {
-            "description": "Dependency not configured or unavailable"
-          }
-        }
+        ]
       }
     },
     "/api/v1/spaces/{slug}/design-links": {
       "get": {
-        "summary": "Read design-links",
+        "summary": "List design links",
         "tags": [
           "Realtime and AI"
         ],
@@ -2613,6 +4850,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2625,13 +4868,26 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "post": {
-        "summary": "Write design-links",
+        "summary": "Add a Figma link",
         "tags": [
           "Realtime and AI"
         ],
@@ -2647,6 +4903,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2659,8 +4921,52 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "externalFileId",
+                  "url",
+                  "title"
+                ],
+                "properties": {
+                  "externalFileId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 180
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -2683,6 +4989,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2695,10 +5007,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/calls/{callId}/end": {
@@ -2719,6 +5045,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2731,10 +5063,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/ai/runs/{runId}": {
@@ -2755,6 +5101,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2767,10 +5119,24 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/spaces/{slug}/files/upload-url": {
@@ -2791,6 +5157,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2803,8 +5175,68 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "fileName",
+                  "contentType",
+                  "byteSize",
+                  "entityType",
+                  "entityId"
+                ],
+                "properties": {
+                  "fileName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "contentType": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 160
+                  },
+                  "byteSize": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 26214400
+                  },
+                  "entityType": {
+                    "type": "string",
+                    "enum": [
+                      "task",
+                      "planning_note",
+                      "design_link",
+                      "space"
+                    ]
+                  },
+                  "entityId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -2827,6 +5259,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2839,15 +5277,29 @@
           "404": {
             "description": "Not found"
           },
+          "429": {
+            "description": "Rate limited"
+          },
           "503": {
             "description": "Dependency not configured or unavailable"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/api/v1/integrations/github/webhook": {
       "post": {
-        "summary": "GitHub signed webhook receiver",
+        "summary": "GitHub signed webhook receiver (HMAC verified, public)",
         "tags": [
           "Integrations"
         ],
@@ -2858,6 +5310,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2869,6 +5327,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"
@@ -2894,6 +5355,12 @@
           "201": {
             "description": "Created"
           },
+          "202": {
+            "description": "Accepted"
+          },
+          "204": {
+            "description": "No content"
+          },
           "400": {
             "description": "Validation error"
           },
@@ -2905,6 +5372,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
           },
           "503": {
             "description": "Dependency not configured or unavailable"

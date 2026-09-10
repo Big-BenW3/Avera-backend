@@ -166,7 +166,6 @@ export class AuthService {
       .setExpirationTime("10m")
       .sign(encoder.encode(this.config.AUTH_JWT_SECRET));
   }
-
   // Return the user id when the ticket is a valid, unexpired MFA ticket.
   async validateMfaTicket(ticket: string): Promise<string | null> {
     try {
@@ -192,17 +191,20 @@ export class AuthService {
     return rows[0] ?? null;
   }
 
-  // Update the user's own profile fields.
+  // Update the user's own profile fields (HTML stripped server-side).
   async updateProfile(
     userId: string,
     input: { displayName: string; bio?: string | null; skills?: string[] },
   ): Promise<SessionUser> {
+    const { cleanStringArray, cleanText } = await import("../../lib/sanitize.js");
     const [user] = await this.database.db
       .update(users)
       .set({
-        displayName: input.displayName,
-        ...(input.bio !== undefined ? { bio: input.bio } : {}),
-        ...(input.skills !== undefined ? { skills: input.skills } : {}),
+        displayName: cleanText(input.displayName, 120),
+        ...(input.bio !== undefined
+          ? { bio: input.bio ? cleanText(input.bio, 500) : null }
+          : {}),
+        ...(input.skills !== undefined ? { skills: cleanStringArray(input.skills, 20, 50) } : {}),
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId))
@@ -219,5 +221,48 @@ export class AuthService {
   // OAuth identities are stored separately from passwords. Provider callbacks are added only after real provider values exist.
   async attachIdentity(userId: string, provider: string, providerAccountId: string): Promise<void> {
     await this.database.db.insert(authIdentities).values({ userId, provider, providerAccountId });
+  }
+
+  // Issue a short-lived password-reset ticket for the account with this email.
+  // Returns null when no account exists so callers can respond generically.
+  async createPasswordResetTicket(email: string): Promise<{ user: SessionUser; ticket: string } | null> {
+    const rows = await this.database.db
+      .select({ id: users.id, email: users.email, handle: users.handle, displayName: users.displayName })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+    const user = rows[0];
+    if (!user) return null;
+    const ticket = await new SignJWT({ kind: "password_reset" })
+      .setProtectedHeader({ alg: "HS256" })
+      .setSubject(user.id)
+      .setIssuedAt()
+      .setExpirationTime("30m")
+      .sign(encoder.encode(this.config.AUTH_JWT_SECRET));
+    return { user, ticket };
+  }
+
+  // Consume a reset ticket: set the new password and revoke every session.
+  async resetPassword(ticket: string, newPassword: string): Promise<SessionUser | null> {
+    let userId: string | null = null;
+    try {
+      const result = await jwtVerify(ticket, encoder.encode(this.config.AUTH_JWT_SECRET));
+      if (result.payload.kind !== "password_reset" || !result.payload.sub) return null;
+      userId = result.payload.sub;
+    } catch {
+      return null;
+    }
+    const passwordHash = await argon2.hash(newPassword, { type: argon2.argon2id });
+    const [user] = await this.database.db
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning({ id: users.id, email: users.email, handle: users.handle, displayName: users.displayName });
+    if (!user) return null;
+    await this.database.db
+      .update(sessions)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(sessions.userId, user.id), isNull(sessions.revokedAt)));
+    return user;
   }
 }

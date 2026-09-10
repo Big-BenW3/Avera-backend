@@ -23,15 +23,107 @@ import { fileRoutes } from "./modules/files/routes.js";
 import { integrationRoutes } from "./modules/integrations/routes.js";
 import { healthRoutes } from "./modules/health/routes.js";
 import { optionalAuth } from "./middleware/auth.js";
+import { globalRateLimit } from "./middleware/rate-limit.js";
+import { bodyLimit, securityHeaders } from "./middleware/security.js";
 import { realtimeEventSchema } from "./realtime/events.js";
 import type { AppEnv } from "./types.js";
 import { swaggerUI } from "@hono/swagger-ui";
 import { readFile } from "node:fs/promises";
+import { and, eq, isNull, or } from "drizzle-orm";
+import {
+  conversationMembers,
+  conversations,
+  spaceMemberships,
+  spaces,
+} from "./db/schema.js";
+
+/** Verify the user may subscribe to a realtime channel before fan-out. */
+async function canSubscribeChannel(
+  dependencies: AppEnv["Variables"],
+  userId: string,
+  channel: string,
+): Promise<boolean> {
+  try {
+    const { db } = dependencies.database;
+    if (channel.startsWith("space:")) {
+      const key = channel.slice("space:".length);
+      if (!key) return false;
+      const row = (
+        await db
+          .select({
+            id: spaces.id,
+            ownerUserId: spaces.ownerUserId,
+            membershipStatus: spaceMemberships.status,
+          })
+          .from(spaces)
+          .leftJoin(
+            spaceMemberships,
+            and(eq(spaceMemberships.spaceId, spaces.id), eq(spaceMemberships.userId, userId)),
+          )
+          .where(or(eq(spaces.id, key), eq(spaces.slug, key)))
+          .limit(1)
+      )[0];
+      if (!row) return false;
+      if (row.ownerUserId === userId) return true;
+      return row.membershipStatus === "active";
+    }
+    if (channel.startsWith("conversation:")) {
+      const conversationId = channel.slice("conversation:".length);
+      if (!conversationId) return false;
+      const membership = (
+        await db
+          .select({ id: conversationMembers.conversationId })
+          .from(conversationMembers)
+          .where(
+            and(
+              eq(conversationMembers.conversationId, conversationId),
+              eq(conversationMembers.userId, userId),
+              isNull(conversationMembers.leftAt),
+            ),
+          )
+          .limit(1)
+      )[0];
+      if (membership) return true;
+      // Space conversations inherit space membership.
+      const conversation = (
+        await db
+          .select({ spaceId: conversations.spaceId })
+          .from(conversations)
+          .where(eq(conversations.id, conversationId))
+          .limit(1)
+      )[0];
+      if (!conversation?.spaceId) return false;
+      const row = (
+        await db
+          .select({
+            ownerUserId: spaces.ownerUserId,
+            membershipStatus: spaceMemberships.status,
+          })
+          .from(spaces)
+          .leftJoin(
+            spaceMemberships,
+            and(eq(spaceMemberships.spaceId, spaces.id), eq(spaceMemberships.userId, userId)),
+          )
+          .where(eq(spaces.id, conversation.spaceId))
+          .limit(1)
+      )[0];
+      if (!row) return false;
+      if (row.ownerUserId === userId) return true;
+      return row.membershipStatus === "active";
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 export function createApp(dependencies: AppEnv["Variables"]) {
   const app = new OpenAPIHono<AppEnv>();
 
   // Global middleware: inject shared dependencies and a request ID into every handler.
+  app.use("*", securityHeaders);
+  app.use("/api/v1/*", bodyLimit(256 * 1024));
+  app.use("/api/v1/*", globalRateLimit());
   app.use("*", async (context, next) => {
     context.set("config", dependencies.config);
     context.set("database", dependencies.database);
@@ -51,6 +143,7 @@ export function createApp(dependencies: AppEnv["Variables"]) {
     if (context.req.path !== "/api/v1/realtime") {
       context.header("Access-Control-Allow-Origin", dependencies.config.WEB_ORIGIN);
       context.header("Access-Control-Allow-Credentials", "true");
+      context.header("Vary", "Origin");
       context.header(
         "Access-Control-Allow-Headers",
         "Content-Type, Authorization, Idempotency-Key",
@@ -85,24 +178,52 @@ export function createApp(dependencies: AppEnv["Variables"]) {
   app.route("/api/v1", fileRoutes());
   app.route("/api/v1", integrationRoutes());
   // WebSocket endpoint: realtime updates for authenticated users.
+  // Auth is enforced before upgrade (401 JSON) and per-channel (membership check).
+  app.get("/api/v1/realtime", optionalAuth, async (context, next) => {
+    if (!context.get("auth")) {
+      return context.json(
+        {
+          error: {
+            code: "UNAUTHENTICATED",
+            message: "Sign in is required.",
+            requestId: context.get("requestId"),
+          },
+        },
+        401,
+      );
+    }
+    await next();
+  });
   app.get(
     "/api/v1/realtime",
     optionalAuth,
     upgradeWebSocket((context) => {
       const auth = context.get("auth");
-      if (!auth) throw new Error("Authenticated WebSocket session required.");
       return {
         // Announce a successful connection right away.
-        onOpen: (_event, socket) =>
+        onOpen: (_event, socket) => {
+          if (!auth) {
+            try {
+              (socket as { close(code?: number, reason?: string): void }).close(
+                4401,
+                "Authenticated WebSocket session required.",
+              );
+            } catch {
+              /* socket already gone */
+            }
+            return;
+          }
           socket.send(
             JSON.stringify({
               type: "realtime.connected",
               requestId: context.get("requestId"),
               userId: auth.userId,
             }),
-          ),
+          );
+        },
         onMessage: async (event, socket) => {
           try {
+            if (!auth) return;
             // Validate the incoming subscribe request against the shared schema.
             const inbound = realtimeEventSchema.parse(JSON.parse(String(event.data)));
             // Only space/conversation channels may be subscribed by clients.
@@ -111,6 +232,13 @@ export function createApp(dependencies: AppEnv["Variables"]) {
               !inbound.channel.startsWith("conversation:")
             )
               return;
+            const allowed = await canSubscribeChannel(dependencies, auth.userId, inbound.channel);
+            if (!allowed) {
+              socket.send(
+                JSON.stringify({ type: "realtime.error", message: "Channel access denied." }),
+              );
+              return;
+            }
             await dependencies.realtime.subscribe(inbound.channel, socket);
           } catch {
             socket.send(
@@ -189,6 +317,19 @@ export function createApp(dependencies: AppEnv["Variables"]) {
 
   // Catch-all error handler: log the failure and return a clean JSON body.
   app.onError((error, context) => {
+    // Malformed JSON bodies should be 400, not 500.
+    if (error instanceof SyntaxError || /unexpected token|invalid json/i.test(error.message)) {
+      return context.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Request body is not valid JSON.",
+            requestId: context.get("requestId"),
+          },
+        },
+        400,
+      );
+    }
     console.error({ requestId: context.get("requestId"), error }, "Unhandled API error");
     return context.json(
       {

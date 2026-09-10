@@ -6,12 +6,15 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { optionalAuth, requireAuth, currentUserId } from "../../middleware/auth.js";
+import { authRateLimit } from "../../middleware/rate-limit.js";
 import type { AppEnv } from "../../types.js";
 import { AuthService } from "./service.js";
 import {
+  forgotPasswordInput,
   mfaCodeInput,
   mfaVerifyInput,
   profileInput,
+  resetPasswordInput,
   signInInput,
   signUpInput,
 } from "./contracts.js";
@@ -48,10 +51,11 @@ function sessionCookie(
   secure: boolean,
   name: string,
 ) {
+  const isProd = process.env.NODE_ENV === "production";
   setCookie(context, name, token, {
     httpOnly: true,
     sameSite: "Lax",
-    secure,
+    secure: secure || isProd,
     path: "/",
     maxAge: ttlHours * 60 * 60,
   });
@@ -105,12 +109,121 @@ const meRoute = createRoute({
   },
 });
 
+const mfaVerifyRoute = createRoute({
+  method: "post",
+  path: "/auth/mfa/verify",
+  request: { body: { content: { "application/json": { schema: mfaVerifyInput } } } },
+  responses: {
+    200: {
+      content: { "application/json": { schema: authResponseSchema } },
+      description: "MFA verified, session issued.",
+    },
+    400: { content: { "application/json": { schema: errorSchema } }, description: "Invalid input." },
+    401: { content: { "application/json": { schema: errorSchema } }, description: "Invalid code." },
+    404: { content: { "application/json": { schema: errorSchema } }, description: "No account." },
+  },
+});
+
+const profileRoute = createRoute({
+  method: "patch",
+  path: "/auth/profile",
+  request: { body: { content: { "application/json": { schema: profileInput } } } },
+  responses: {
+    200: {
+      content: { "application/json": { schema: z.object({ user: userSchema }) } },
+      description: "Profile updated.",
+    },
+    400: { content: { "application/json": { schema: errorSchema } }, description: "Invalid input." },
+    401: { content: { "application/json": { schema: errorSchema } }, description: "Unauthenticated." },
+  },
+});
+
+const mfaEnrollRoute = createRoute({
+  method: "post",
+  path: "/auth/mfa/enroll",
+  responses: {
+    201: {
+      content: {
+        "application/json": {
+          schema: z.object({ secret: z.string(), otpauthUrl: z.string() }),
+        },
+      },
+      description: "TOTP enrollment started.",
+    },
+    401: { content: { "application/json": { schema: errorSchema } }, description: "Unauthenticated." },
+    404: { content: { "application/json": { schema: errorSchema } }, description: "No account." },
+  },
+});
+
+const mfaConfirmRoute = createRoute({
+  method: "post",
+  path: "/auth/mfa/confirm",
+  request: { body: { content: { "application/json": { schema: mfaCodeInput } } } },
+  responses: {
+    200: {
+      content: { "application/json": { schema: z.object({ enabled: z.boolean() }) } },
+      description: "MFA enabled.",
+    },
+    400: { content: { "application/json": { schema: errorSchema } }, description: "Invalid code." },
+    401: { content: { "application/json": { schema: errorSchema } }, description: "Unauthenticated." },
+  },
+});
+
+const signOutRoute = createRoute({
+  method: "post",
+  path: "/auth/sign-out",
+  responses: {
+    204: { description: "Session revoked." },
+  },
+});
+
+const forgotPasswordRoute = createRoute({
+  method: "post",
+  path: "/auth/password/forgot",
+  request: { body: { content: { "application/json": { schema: forgotPasswordInput } } } },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            sent: z.boolean(),
+            resetTicket: z.string().optional(),
+          }),
+        },
+      },
+      description: "Reset ticket issued (generic response, no enumeration).",
+    },
+    400: { content: { "application/json": { schema: errorSchema } }, description: "Invalid input." },
+  },
+});
+
+const resetPasswordRoute = createRoute({
+  method: "post",
+  path: "/auth/password/reset",
+  request: { body: { content: { "application/json": { schema: resetPasswordInput } } } },
+  responses: {
+    200: {
+      content: { "application/json": { schema: z.object({ user: userSchema }) } },
+      description: "Password reset, all sessions revoked.",
+    },
+    400: { content: { "application/json": { schema: errorSchema } }, description: "Invalid input." },
+    401: { content: { "application/json": { schema: errorSchema } }, description: "Invalid ticket." },
+  },
+});
+
 /**
  * Own authentication module. It has no dependency on a hosted identity platform:
  * passwords are Argon2id hashes, browser sessions are opaque/hashed, and MFA uses TOTP.
  */
 export function authRoutes() {
   const app = new OpenAPIHono<AppEnv>();
+
+  // Brute-force guard on credential + MFA endpoints (Redis fixed-window).
+  app.use("/auth/sign-up", authRateLimit());
+  app.use("/auth/sign-in", authRateLimit());
+  app.use("/auth/mfa/verify", authRateLimit());
+  app.use("/auth/password/forgot", authRateLimit());
+  app.use("/auth/password/reset", authRateLimit());
 
   app.openapi(signUpRoute, async (context) => {
     // Register the account, then immediately start a session for the new user.
@@ -184,9 +297,9 @@ export function authRoutes() {
     return context.json({ user, requiresMfa: false }, 200);
   });
 
-  app.post("/auth/mfa/verify", async (context) => {
+  app.openapi(mfaVerifyRoute, async (context) => {
     // Complete the sign-in by checking the code against the user's TOTP factor.
-    const parsed = mfaVerifyInput.safeParse(await context.req.json());
+    const parsed = mfaVerifyInput.safeParse(await context.req.json().catch(() => null));
     if (!parsed.success)
       return context.json(
         {
@@ -257,8 +370,8 @@ export function authRoutes() {
 
   app.use("/auth/profile", requireAuth);
   // Update the signed-in user's own profile fields.
-  app.patch("/auth/profile", async (context) => {
-    const parsed = profileInput.safeParse(await context.req.json());
+  app.openapi(profileRoute, async (context) => {
+    const parsed = profileInput.safeParse(await context.req.json().catch(() => null));
     if (!parsed.success)
       return context.json(
         {
@@ -276,7 +389,7 @@ export function authRoutes() {
 
   app.use("/auth/mfa/enroll", requireAuth);
   // Start TOTP enrollment and return the secret to scan into an authenticator app.
-  app.post("/auth/mfa/enroll", async (context) => {
+  app.openapi(mfaEnrollRoute, async (context) => {
     const user = await service(context).userForId(currentUserId(context));
     if (!user)
       return context.json(
@@ -294,8 +407,8 @@ export function authRoutes() {
 
   app.use("/auth/mfa/confirm", requireAuth);
   // Verify the code once so MFA is actually enabled for the account.
-  app.post("/auth/mfa/confirm", async (context) => {
-    const parsed = mfaCodeInput.safeParse(await context.req.json());
+  app.openapi(mfaConfirmRoute, async (context) => {
+    const parsed = mfaCodeInput.safeParse(await context.req.json().catch(() => null));
     if (!parsed.success)
       return context.json(
         {
@@ -324,12 +437,61 @@ export function authRoutes() {
 
   app.use("/auth/sign-out", optionalAuth);
   // Revoke the session in the database and clear the cookie.
-  app.post("/auth/sign-out", async (context) => {
+  app.openapi(signOutRoute, async (context) => {
     const config = context.get("config");
     const token = getCookie(context, config.AUTH_COOKIE_NAME);
     if (token) await service(context).revokeSession(token);
     deleteCookie(context, config.AUTH_COOKIE_NAME, { path: "/" });
     return context.body(null, 204);
+  });
+
+  // Request a password-reset ticket. Always 200 so emails cannot be enumerated.
+  // The ticket is returned in the response until transactional email is wired.
+  app.openapi(forgotPasswordRoute, async (context) => {
+    const parsed = forgotPasswordInput.safeParse(await context.req.json().catch(() => null));
+    if (!parsed.success)
+      return context.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "A valid email address is required.",
+            requestId: context.get("requestId"),
+          },
+        },
+        400,
+      );
+    const result = await service(context).createPasswordResetTicket(parsed.data.email);
+    if (!result) return context.json({ sent: true }, 200);
+    return context.json({ sent: true, resetTicket: result.ticket }, 200);
+  });
+
+  // Consume a reset ticket with a new password; all sessions are revoked.
+  app.openapi(resetPasswordRoute, async (context) => {
+    const parsed = resetPasswordInput.safeParse(await context.req.json().catch(() => null));
+    if (!parsed.success)
+      return context.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "A valid ticket and 12+ character password are required.",
+            requestId: context.get("requestId"),
+          },
+        },
+        400,
+      );
+    const user = await service(context).resetPassword(parsed.data.ticket, parsed.data.password);
+    if (!user)
+      return context.json(
+        {
+          error: {
+            code: "RESET_INVALID",
+            message: "The reset link is invalid or expired.",
+            requestId: context.get("requestId"),
+          },
+        },
+        401,
+      );
+    return context.json({ user }, 200);
   });
 
   return app;

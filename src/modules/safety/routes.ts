@@ -7,6 +7,8 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { contentReports } from "../../db/schema.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
+import { writeRateLimit } from "../../middleware/rate-limit.js";
+import { cleanText } from "../../lib/sanitize.js";
 import type { AppEnv } from "../../types.js";
 
 const reportInput = z.object({
@@ -20,6 +22,8 @@ export function safetyRoutes() {
   const app = new Hono<AppEnv>();
   // Safety endpoints require a signed-in user.
   app.use("/*", requireAuth);
+  // Blunt report flooding.
+  app.use("/reports", writeRateLimit());
 
   // File a report against public content for later moderation.
   app.post("/reports", async (context) => {
@@ -38,7 +42,13 @@ export function safetyRoutes() {
     const [report] = await context
       .get("database")
       .db.insert(contentReports)
-      .values({ reporterUserId: currentUserId(context), ...parsed.data })
+      .values({
+        reporterUserId: currentUserId(context),
+        entityType: parsed.data.entityType,
+        entityId: parsed.data.entityId,
+        reason: parsed.data.reason,
+        context: parsed.data.context ? cleanText(parsed.data.context, 3000) : null,
+      })
       .returning();
     // Reports are intentionally post-publication. Only moderation staff tooling can read or resolve them.
     return context.json({ report }, 201);

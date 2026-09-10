@@ -47,3 +47,12 @@ export const profileInput = z.object({
   bio: z.string().trim().max(500).nullable().optional(),
   skills: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
 });
+
+// Request a password-reset ticket for an email address.
+export const forgotPasswordInput = z.object({ email: emailSchema });
+
+// Consume a reset ticket with a new password.
+export const resetPasswordInput = z.object({
+  ticket: z.string().min(1),
+  password: passwordSchema,
+});

@@ -33,6 +33,8 @@
 | POST | `/api/v1/auth/mfa/enroll` | requireAuth | Generate secret+otpauthUrl `201` | Security → Show QR |
 | POST | `/api/v1/auth/mfa/confirm` | requireAuth | Verify initial 6-digit code enables MFA | Security → Confirm |
 | POST | `/api/v1/auth/sign-out` | optionalAuth | Revoke `revokedAt` + `deleteCookie` `204` | Logout |
+| POST | `/api/v1/auth/password/forgot` | none (rate-limited) | `{email}` → always `200 {sent:true}` (+`resetTicket` until email is wired) | ForgotPassword step 1 |
+| POST | `/api/v1/auth/password/reset` | none (rate-limited) | `{ticket 30m, password≥12}` → `200 {user}`, revokes all sessions | ForgotPassword step 2 |
 
 ## Discovery `src/modules/discovery/routes.ts`
 

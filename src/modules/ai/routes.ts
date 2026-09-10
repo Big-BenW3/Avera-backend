@@ -3,7 +3,7 @@
  * Exposes Space-scoped Project Memory settings and queued AI runs while excluding private chat content.
  */
 
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import {
@@ -12,8 +12,10 @@ import {
   aiSourceDocuments,
   outboxEvents,
   spaceAiSettings,
+  spaces,
 } from "../../db/schema.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
+import { aiRateLimit, writeRateLimit } from "../../middleware/rate-limit.js";
 import type { AppEnv } from "../../types.js";
 import { NvidiaAiProvider } from "../../providers/nvidia.js";
 import { canAccess, resolveSpaceAccess } from "../spaces/access.js";
@@ -33,6 +35,8 @@ export function aiRoutes() {
   const app = new Hono<AppEnv>();
   // AI endpoints are private.
   app.use("/*", requireAuth);
+  // Cost guard: per-user/per-day bucket on run creation.
+  app.use("/spaces/*/ai/runs", aiRateLimit());
 
   // Read the current Project Memory settings for a Space.
   app.get("/spaces/:slug/ai/settings", async (context) => {
@@ -157,6 +161,28 @@ export function aiRoutes() {
         },
         503,
       );
+    // Per-space daily quota: blunt cost-exhaustion from run spamming.
+    const [quota] = await context
+      .get("database")
+      .db.select({ count: sql<number>`count(*)::int` })
+      .from(aiRuns)
+      .where(
+        and(
+          eq(aiRuns.spaceId, access!.spaceId),
+          gt(aiRuns.createdAt, new Date(Date.now() - 24 * 60 * 60 * 1000)),
+        ),
+      );
+    if ((quota?.count ?? 0) >= 50)
+      return context.json(
+        {
+          error: {
+            code: "AI_QUOTA_EXCEEDED",
+            message: "Daily AI run quota for this Space is exhausted.",
+            requestId: context.get("requestId"),
+          },
+        },
+        429,
+      );
     const [run] = await context
       .get("database")
       .db.insert(aiRuns)
@@ -227,6 +253,29 @@ export function aiRoutes() {
           },
         },
         404,
+      );
+    // IDOR guard: only members with ai:view on the run's space may read it.
+    const runSpace = (
+      await context
+        .get("database")
+        .db.select({ slug: spaces.slug })
+        .from(spaces)
+        .where(eq(spaces.id, run.spaceId))
+        .limit(1)
+    )[0];
+    const runAccess = runSpace
+      ? await resolveSpaceAccess(context.get("database"), runSpace.slug, currentUserId(context))
+      : null;
+    if (!canAccess(runAccess, currentUserId(context), "ai:view"))
+      return context.json(
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "AI access is required.",
+            requestId: context.get("requestId"),
+          },
+        },
+        403,
       );
     const citations = await context
       .get("database")

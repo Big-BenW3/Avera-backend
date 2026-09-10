@@ -6,8 +6,9 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
-import { taskComments, tasks } from "../../db/schema.js";
+import { spaces, taskComments, tasks } from "../../db/schema.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
+import { cleanText } from "../../lib/sanitize.js";
 import type { AppEnv } from "../../types.js";
 import { recordActivity } from "../activity/service.js";
 import { canAccess, resolveSpaceAccess } from "../spaces/access.js";
@@ -94,7 +95,12 @@ export function taskRoutes() {
       .get("database")
       .db.insert(tasks)
       .values({
-        ...parsed.data,
+        title: cleanText(parsed.data.title, 180),
+        description: parsed.data.description ? cleanText(parsed.data.description, 6000) : null,
+        area: cleanText(parsed.data.area ?? "Product", 80),
+        priority: parsed.data.priority ?? "medium",
+        assigneeUserId: parsed.data.assigneeUserId ?? null,
+        roadmapItemId: parsed.data.roadmapItemId ?? null,
         spaceId: access!.spaceId,
         createdByUserId: currentUserId(context),
         dueAt: parsed.data.dueAt ? new Date(parsed.data.dueAt) : null,
@@ -133,8 +139,8 @@ export function taskRoutes() {
         404,
       );
     const spaceSlug = (
-      await db.execute<{ slug: string }>(`select slug from spaces where id = '${task.spaceId}'`)
-    ).rows[0]?.slug;
+      await db.select({ slug: spaces.slug }).from(spaces).where(eq(spaces.id, task.spaceId)).limit(1)
+    )[0]?.slug;
     const access = spaceSlug
       ? await resolveSpaceAccess(context.get("database"), spaceSlug, currentUserId(context))
       : null;
@@ -190,13 +196,15 @@ export function taskRoutes() {
         },
         404,
       );
-    const accessRows = await db.execute<{ slug: string }>(
-      `select slug from spaces where id = '${task.spaceId}'`,
-    );
-    const access = accessRows.rows[0]
+    const accessRows = await db
+      .select({ slug: spaces.slug })
+      .from(spaces)
+      .where(eq(spaces.id, task.spaceId))
+      .limit(1);
+    const access = accessRows[0]
       ? await resolveSpaceAccess(
           context.get("database"),
-          accessRows.rows[0].slug,
+          accessRows[0].slug,
           currentUserId(context),
         )
       : null;
@@ -214,7 +222,19 @@ export function taskRoutes() {
     const [updated] = await db
       .update(tasks)
       .set({
-        ...parsed.data,
+        title: parsed.data.title ? cleanText(parsed.data.title, 180) : undefined,
+        description:
+          parsed.data.description === undefined
+            ? undefined
+            : parsed.data.description
+              ? cleanText(parsed.data.description, 6000)
+              : null,
+        area: parsed.data.area ? cleanText(parsed.data.area, 80) : undefined,
+        priority: parsed.data.priority,
+        status: parsed.data.status,
+        position: parsed.data.position,
+        assigneeUserId: parsed.data.assigneeUserId,
+        roadmapItemId: parsed.data.roadmapItemId,
         dueAt:
           parsed.data.dueAt === undefined
             ? undefined
@@ -269,9 +289,30 @@ export function taskRoutes() {
         },
         404,
       );
+    const commentSpace = (
+      await db.select({ slug: spaces.slug }).from(spaces).where(eq(spaces.id, task.spaceId)).limit(1)
+    )[0];
+    const commentAccess = commentSpace
+      ? await resolveSpaceAccess(context.get("database"), commentSpace.slug, currentUserId(context))
+      : null;
+    if (!canAccess(commentAccess, currentUserId(context), "tasks:view"))
+      return context.json(
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Task access is required.",
+            requestId: context.get("requestId"),
+          },
+        },
+        403,
+      );
     const [comment] = await db
       .insert(taskComments)
-      .values({ taskId: task.id, authorUserId: currentUserId(context), body: parsed.data.body })
+      .values({
+        taskId: task.id,
+        authorUserId: currentUserId(context),
+        body: cleanText(parsed.data.body, 4000),
+      })
       .returning();
     await recordActivity(context.get("database"), {
       spaceId: task.spaceId,
