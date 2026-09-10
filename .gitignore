@@ -1,9 +1,27 @@
+# dependencies
 node_modules/
+
+# build output
 dist/
 coverage/
+
+# logs & OS files
 *.log
-.DS_Store
 npm-debug.log*
+.DS_Store
+
+# drizzle metadata (generated)
 drizzle/meta/
+
+# environment files (never commit secrets)
 .env
-.env.local
+.env.*
+!.env.example
+
+# typescript build cache
+*.tsbuildinfo
+
+# credentials / keys
+*.pem
+*.p12
+*.key
