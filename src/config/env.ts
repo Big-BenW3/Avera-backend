@@ -15,14 +15,24 @@ export const environmentSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
   API_ORIGIN: z.string().url().default("http://localhost:4000"),
-  WEB_ORIGIN: z.string().url().default("http://localhost:3000"),
+  // Comma-separated allowlist of browser origins. Requests from any other origin
+  // receive no Access-Control-Allow-Origin header and are blocked by the browser.
+  WEB_ORIGIN: z
+    .string()
+    .default("http://localhost:3000")
+    .transform((value) =>
+      value
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    ),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1),
   AUTH_JWT_SECRET: z.string().min(32),
   AUTH_SESSION_TTL_HOURS: z.coerce.number().int().positive().default(168),
   AUTH_REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(30),
-  AUTH_COOKIE_NAME: z.string().min(1).default("buildspace_session"),
+  AUTH_COOKIE_NAME: z.string().min(1).default("avera_session"),
   AUTH_SECURE_COOKIES: z
     .enum(["true", "false"])
     .default("false")

@@ -166,6 +166,49 @@ describe("discovery/people/ideas edge", () => {
     });
     expect(r2.status).toBe(400);
   });
+  it("bookmark round-trip: discover/ideas returns the caller's bookmarkedIdeaIds", async () => {
+    expect(ideaId).toBeTruthy();
+    // An unbooked idea must not appear in the caller's bookmark list.
+    const before = await ctx.app.request("/api/v1/discover/ideas", { headers: { Cookie: cookie } });
+    expect(before.status).toBe(200);
+    const beforeBody: any = await json(before);
+    expect(beforeBody.bookmarkedIdeaIds).not.toContain(ideaId);
+
+    const add = await ctx.app.request(`/api/v1/ideas/${ideaId}/bookmark`, {
+      method: "POST",
+      headers: { Cookie: cookie },
+    });
+    expect([200, 201, 204]).toContain(add.status);
+
+    // Regression guard: this list used to be hardcoded to `where(sql`false`)`.
+    const after = await ctx.app.request("/api/v1/discover/ideas", { headers: { Cookie: cookie } });
+    expect(after.status).toBe(200);
+    const afterBody: any = await json(after);
+    expect(afterBody.bookmarkedIdeaIds).toContain(ideaId);
+
+    const remove = await ctx.app.request(`/api/v1/ideas/${ideaId}/bookmark`, {
+      method: "DELETE",
+      headers: { Cookie: cookie },
+    });
+    expect([200, 204]).toContain(remove.status);
+
+    const cleared = await ctx.app.request("/api/v1/discover/ideas", { headers: { Cookie: cookie } });
+    const clearedBody: any = await json(cleared);
+    expect(clearedBody.bookmarkedIdeaIds).not.toContain(ideaId);
+  });
+  it("cors echoes allowlisted Origin and omits unknown origins", async () => {
+    const allowedOrigin = ctx.config.WEB_ORIGIN[0];
+    const ok = await ctx.app.request("/api/v1/discover/announcements", {
+      headers: { Origin: allowedOrigin },
+    });
+    expect(ok.headers.get("Access-Control-Allow-Origin")).toBe(allowedOrigin);
+    expect(ok.headers.get("Access-Control-Allow-Credentials")).toBe("true");
+
+    const denied = await ctx.app.request("/api/v1/discover/announcements", {
+      headers: { Origin: "https://evil.example.com" },
+    });
+    expect(denied.headers.get("Access-Control-Allow-Origin")).toBeNull();
+  });
   it("idea id sqli path is treated as id string, not query — 404 not injection", async () => {
     const r = await ctx.app.request(`/api/v1/ideas/${encodeURIComponent(SQLI_DROP)}`, {
       headers: { Cookie: cookie },

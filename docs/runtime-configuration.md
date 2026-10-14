@@ -7,13 +7,13 @@ Supply configuration through your host's secret manager or a local `.env` file. 
 | `NODE_ENV` | Yes | `development`, `test`, or `production` |
 | `PORT` | Yes | HTTP port, for example `4000` |
 | `API_ORIGIN` | Yes | Public API URL |
-| `WEB_ORIGIN` | Yes | Next.js frontend URL for CORS |
+| `WEB_ORIGIN` | Yes | Comma-separated allowlist of frontend origins allowed to call the API with cookies, for example `http://localhost:3000,https://avera.example.com` |
 | `DATABASE_URL` | Yes | Neon Node.js PostgreSQL connection string, including `sslmode=require` |
 | `REDIS_URL` | Yes | Upstash **ioredis** TLS connection string, beginning with `rediss://` |
 | `AUTH_JWT_SECRET` | Yes | Long random server-only session signing secret |
 | `AUTH_SESSION_TTL_HOURS` | No | Defaults to `168` |
 | `AUTH_REFRESH_TTL_DAYS` | No | Defaults to `30` |
-| `AUTH_COOKIE_NAME` | No | Defaults to `buildspace_session` |
+| `AUTH_COOKIE_NAME` | No | Defaults to `avera_session` |
 | `AUTH_SECURE_COOKIES` | No | Set to `true` behind HTTPS |
 | `S3_*` | Later | Object storage configuration for attachments |
 | `LIVEKIT_*` | Later | Server-only LiveKit keys for call-token generation |

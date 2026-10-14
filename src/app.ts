@@ -138,11 +138,17 @@ export function createApp(dependencies: AppEnv["Variables"]) {
     context.header("x-request-id", context.get("requestId"));
   });
 
-  // CORS middleware: let the web frontend call this API from its own origin.
+  // CORS middleware: let allowlisted web origins call this API with cookies.
+  // The request Origin is validated against config.WEB_ORIGIN; an unknown origin
+  // gets no Allow-Origin header at all, so the browser blocks the response.
   app.use("/api/v1/*", async (context, next) => {
     if (context.req.path !== "/api/v1/realtime") {
-      context.header("Access-Control-Allow-Origin", dependencies.config.WEB_ORIGIN);
-      context.header("Access-Control-Allow-Credentials", "true");
+      const origin = context.req.header("Origin");
+      const allowed = origin ? dependencies.config.WEB_ORIGIN.includes(origin) : false;
+      if (allowed && origin) {
+        context.header("Access-Control-Allow-Origin", origin);
+        context.header("Access-Control-Allow-Credentials", "true");
+      }
       context.header("Vary", "Origin");
       context.header(
         "Access-Control-Allow-Headers",

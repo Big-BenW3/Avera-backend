@@ -1,6 +1,6 @@
 # Avera Backend — API Route Catalogue
 
-> Base: `http://localhost:4000` · Prefix: `/api/v1` (health/docs at root) · Auth: `Cookie: buildspace_session=<opaque>` or `Authorization: Bearer <token>` · `x-request-id` echoed · CORS `WEB_ORIGIN`
+> Base: `http://localhost:4000` · Prefix: `/api/v1` (health/docs at root) · Auth: `Cookie: avera_session=<opaque>` or `Authorization: Bearer <token>` · `x-request-id` echoed · CORS `WEB_ORIGIN` allowlist
 > Composed in `src/app.ts:32` via `createApp({config, database, redis, realtime})` `src/app.ts:55-59`. Docs: dynamic `GET /openapi.json` `src/app.ts:75` (`app.doc` from Zod), legacy `GET /openapi.manual.json` `src/app.ts:82`, Swagger `GET /docs` `src/app.ts:97`.
 
 **Policy (2026-09-06):** Only `GET /api/v1/discover/announcements` + `GET /health/*` + `GET /docs|/openapi.json` are public. Every other route requires `requireAuth` (`src/middleware/auth.ts:48` → `401 UNAUTHENTICATED`). This was changed from the prior public reads on `discover/ideas`, `discover/spaces`, `search`, `ideas/:id`, `people` (`src/modules/discovery/routes.ts:24,41,65`, `src/modules/ideas/routes.ts:32`, `src/modules/users/routes.ts:15` now guarded).

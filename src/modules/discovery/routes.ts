@@ -7,6 +7,7 @@ import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import {
   announcements,
+  ideaBookmarks,
   ideaInterests,
   ideas,
   spaceFollows,
@@ -62,12 +63,13 @@ export function discoveryRoutes() {
       .groupBy(ideas.id)
       .orderBy(desc(sql`count(${ideaInterests.userId})`), desc(ideas.createdAt))
       .limit(30);
+    // The signed-in user's own bookmarks, so the dashboard can render saved state.
     const bookmarks = viewerId
       ? await db
-          .select({ ideaId: sql<string>`${ideas.id}` })
-          .from(ideas)
-          .where(sql`false`)
-      : []; // Bookmarked IDs are loaded by the dedicated user route to keep dashboard reads cheap.
+          .select({ ideaId: ideaBookmarks.ideaId })
+          .from(ideaBookmarks)
+          .where(eq(ideaBookmarks.userId, viewerId))
+      : [];
     return context.json({ items: rows, bookmarkedIdeaIds: bookmarks.map((item) => item.ideaId) });
   });
 
