@@ -117,13 +117,13 @@
 | Method | Path | Auth | Purpose | UI |
 |---|---|---|---|---|
 | GET | `/api/v1/spaces/:slug/chat` | requireAuth `chat:view` | `conversationId + items 100 reverse` auto-creates `space` conversation | Space chat |
-| POST | `/api/v1/spaces/:slug/chat/messages` | requireAuth `chat:send` | `{body 1-8000, replyTo}` → `outbox conversation.message_created` `201` | Send box |
-| POST | `/api/v1/dm/requests` | requireAuth | `{recipientUserId, body 1-2000}` bidirectional block check → `outbox notification.message_request` `201` `403` if self/blocked | DM request |
+| POST | `/api/v1/spaces/:slug/chat/messages` | requireAuth `chat:send` | `{body 1-8000, replyTo}` `201` | Send box |
+| POST | `/api/v1/dm/requests` | requireAuth | `{recipientUserId, body 1-2000}` bidirectional block check `201` `403` if self/blocked | DM request |
 | GET | `/api/v1/dm/requests` | requireAuth | Incoming pending where `recipient=current` | Inbox |
 | PATCH | `/api/v1/dm/requests/:rid` | requireAuth | `accepted/declined` on accept txn `direct` conversation+2 members+initial message | Review |
 | GET | `/api/v1/dm/conversations` | requireAuth | Direct where active member | DM list |
 | GET | `/api/v1/conversations/:cid/messages` | requireAuth member | `100 non-deleted DESC reverse` | Thread |
-| POST | `/api/v1/conversations/:cid/messages` | requireAuth member | `201` + outbox | Send DM |
+| POST | `/api/v1/conversations/:cid/messages` | requireAuth member | `201` | Send DM |
 | POST | `/api/v1/messages/:mid/read` | requireAuth member | Upsert `messageReceipts` `204` `404` if not member | Read receipt |
 
 ## Notifications `src/modules/notifications/routes.ts`
@@ -139,7 +139,7 @@
 | Method | Path | Auth | Purpose | UI |
 |---|---|---|---|---|
 | GET | `/api/v1/spaces/:slug/calls` | requireAuth `calls:view` | `createdAt` | Calls list |
-| POST | `/api/v1/spaces/:slug/calls` | requireAuth `calls:start` | `{title 2-180, taskId, startsAt}` room `space-<id>-<opaque>` `scheduled|live` + `outbox call.changed` `201` | Schedule |
+| POST | `/api/v1/spaces/:slug/calls` | requireAuth `calls:start` | `{title 2-180, taskId, startsAt}` room `space-<id>-<opaque>` `scheduled|live` `201` | Schedule |
 | POST | `/api/v1/calls/:cid/join` | requireAuth `calls:join` | `createLiveKitToken ttl 1h {roomJoin, canPublish, canSubscribe}` + `callParticipants` `scheduled→live` `503` if not configured | Join |
 | POST | `/api/v1/calls/:cid/end` | requireAuth owner | Only `startedBy` else `403` → `ended` `204` | End |
 
@@ -149,11 +149,13 @@
 |---|---|---|---|---|
 | GET | `/api/v1/spaces/:slug/ai/settings` | requireAuth `ai:view` | Or default `{enabledSources:[roadmap,tasks,activity,design,build], chatExcluded:true}` | AI settings view |
 | PUT | `/api/v1/spaces/:slug/ai/settings` | requireAuth `ai:manage` | Upsert `enabledSources min1` `chatExcluded literal true` | Settings edit |
-| POST | `/api/v1/spaces/:slug/ai/runs` | requireAuth `ai:run` | `{kind planning_interview/proposal/summary/task_breakdown/memory_question, prompt 1-12000, sourceIds 0-30}` → `aiRuns queued` + `outbox ai.run` `202` `503` if `NvidiaAiProvider` not configured `src/providers/nvidia.ts:16` | Prompt modal |
+| POST | `/api/v1/spaces/:slug/ai/runs` | requireAuth `ai:run` | `{kind planning_interview/proposal/summary/task_breakdown/memory_question, prompt 1-12000, sourceIds 0-30}` → `aiRuns queued` `202` `503` if `NvidiaAiProvider` not configured `src/providers/nvidia.ts:16` | Prompt modal |
 | GET | `/api/v1/spaces/:slug/ai/runs` | requireAuth `ai:view` | 50 `DESC` | History |
 | GET | `/api/v1/ai/runs/:runId` | requireAuth | `run + citations` `404` | Detail |
 
-Worker `src/jobs/worker.ts:17` polls `25 every 5s` → `NvidiaAiProvider.complete()` with system prompt `Use only authorised Space sources` → `completed` + `publishEvent ai.completed` `space:<id>`.
+> **No worker.** Runs are recorded as `queued` but nothing executes them in this
+> deployment — there is no background process. A run stays `queued` indefinitely
+> until an execution path exists.
 
 ## Files `src/modules/files/routes.ts` S3 presigned
 
@@ -168,7 +170,7 @@ Worker `src/jobs/worker.ts:17` polls `25 every 5s` → `NvidiaAiProvider.complet
 |---|---|---|---|---|
 | GET | `/api/v1/spaces/:slug/integrations` | requireAuth `integrations:view` | Strips `secretCiphertext` | Connections |
 | GET | `/api/v1/spaces/:slug/design-links` | requireAuth `design:view` | List | Figma links |
-| POST | `/api/v1/spaces/:slug/design-links` | requireAuth `design:edit` | `{externalFileId 1-255, url, title 1-180}` + `outbox ai.index_requested` `201` | Link Figma |
+| POST | `/api/v1/spaces/:slug/design-links` | requireAuth `design:edit` | `{externalFileId 1-255, url, title 1-180}` `201` | Link Figma |
 | POST | `/api/v1/integrations/github/webhook` | requireAuth* | `x-hub-signature-256` `202 {accepted:true}` else `401` | GitHub |
 
 ## Safety `src/modules/safety/routes.ts`

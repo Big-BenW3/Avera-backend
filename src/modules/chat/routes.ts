@@ -1,6 +1,6 @@
 /**
  * Buildspace API module: src/modules/chat/routes.ts
- * Persists Space chat, message requests, direct messages, receipts, and their realtime outbox events.
+ * Persists Space chat, message requests, direct messages, and message receipts.
  */
 
 import { and, desc, eq, inArray, isNull, or } from "drizzle-orm";
@@ -12,7 +12,6 @@ import {
   messageReceipts,
   messageRequests,
   messages,
-  outboxEvents,
   spaceMemberships,
   spaces,
   userBlocks,
@@ -72,20 +71,7 @@ async function spaceConversation(
   return conversation!.id;
 }
 
-async function queueMessageEvent(
-  context: Parameters<typeof currentUserId>[0],
-  conversationId: string,
-  messageId: string,
-) {
-  await context.get("database").db.insert(outboxEvents).values({
-    type: "conversation.message_created",
-    aggregateType: "message",
-    aggregateId: messageId,
-    payload: { conversationId, messageId },
-  });
-}
-
-/** Chats are persisted first. Redis/WebSockets only distribute an event after the durable record exists. */
+/** Chats are persisted as durable records; clients read history directly. */
 export function chatRoutes() {
   const app = new Hono<AppEnv>();
   app.use("/*", requireAuth);
@@ -159,7 +145,6 @@ export function chatRoutes() {
         replyToMessageId: parsed.data.replyToMessageId ?? null,
       })
       .returning();
-    await queueMessageEvent(context, conversationId, message!.id);
     return context.json({ message }, 201);
   });
 
@@ -225,12 +210,6 @@ export function chatRoutes() {
         body: cleanText(parsed.data.body, 2000),
       })
       .returning();
-    await db.insert(outboxEvents).values({
-      type: "notification.message_request",
-      aggregateType: "message_request",
-      aggregateId: request!.id,
-      payload: { userId: parsed.data.recipientUserId, requestId: request!.id },
-    });
     return context.json({ request }, 201);
   });
 
@@ -391,7 +370,6 @@ export function chatRoutes() {
         replyToMessageId: parsed.data.replyToMessageId ?? null,
       })
       .returning();
-    await queueMessageEvent(context, conversationId, message!.id);
     return context.json({ message }, 201);
   });
 

@@ -9,7 +9,6 @@ import { z } from "zod";
 import {
   callParticipants,
   callSessions,
-  outboxEvents,
   spaces,
   tasks,
   users,
@@ -58,7 +57,7 @@ export function callRoutes() {
       .orderBy(callSessions.createdAt);
     return context.json({ items });
   });
-  // Schedule or start a new call, then notify followers through the outbox.
+  // Schedule or start a new call.
   app.post("/spaces/:slug/calls", async (context) => {
     const parsed = callInput.safeParse(await context.req.json());
     const access = await resolveSpaceAccess(
@@ -101,15 +100,6 @@ export function callRoutes() {
         startedAt: parsed.data.startsAt ? new Date(parsed.data.startsAt) : new Date(),
       })
       .returning();
-    await context
-      .get("database")
-      .db.insert(outboxEvents)
-      .values({
-        type: "call.changed",
-        aggregateType: "call_session",
-        aggregateId: call!.id,
-        payload: { spaceId: access!.spaceId, callId: call!.id, state: call!.status },
-      });
     return context.json({ call }, 201);
   });
   // Issue a short-lived LiveKit token so a participant can join the room.

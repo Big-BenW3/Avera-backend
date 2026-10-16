@@ -1,6 +1,10 @@
 /**
  * Buildspace API module: src/modules/ai/routes.ts
  * Exposes Space-scoped Project Memory settings and queued AI runs while excluding private chat content.
+ *
+ * NOTE: AI runs are recorded with status "queued" but nothing executes them —
+ * there is no worker in this deployment. A run only leaves that state once an
+ * execution path exists.
  */
 
 import { and, desc, eq, gt, sql } from "drizzle-orm";
@@ -10,7 +14,6 @@ import {
   aiCitations,
   aiRuns,
   aiSourceDocuments,
-  outboxEvents,
   spaceAiSettings,
   spaces,
 } from "../../db/schema.js";
@@ -118,7 +121,7 @@ export function aiRoutes() {
       .returning();
     return context.json({ settings });
   });
-  // Queue a new AI run and enqueue an outbox job for the worker.
+  // Record a new AI run.
   app.post("/spaces/:slug/ai/runs", async (context) => {
     const parsed = runInput.safeParse(await context.req.json());
     const access = await resolveSpaceAccess(
@@ -195,15 +198,6 @@ export function aiRoutes() {
         input: { prompt: parsed.data.prompt, sourceIds: parsed.data.sourceIds ?? [] },
       })
       .returning();
-    await context
-      .get("database")
-      .db.insert(outboxEvents)
-      .values({
-        type: "ai.run",
-        aggregateType: "ai_run",
-        aggregateId: run!.id,
-        payload: { runId: run!.id, spaceId: access!.spaceId },
-      });
     return context.json({ run }, 202);
   });
   // List recent AI runs for a Space.

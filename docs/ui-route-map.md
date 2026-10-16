@@ -15,4 +15,4 @@
 | Design, files, GitHub/Figma | design-link routes, signed file upload/download routes, integration status and signed GitHub webhook boundary |
 | Notifications | `GET /notifications`, `POST /notifications/:notificationId/read`, `POST /notifications/read-all` |
 
-Every write route should be connected by replacing the frontend’s local state mutation with an API call, optimistic cache update, and WebSocket invalidation or event handler. The API persists an activity event/outbox record before it broadcasts the related live event.
+Every write route should be connected by replacing the frontend’s local state mutation with an API call, optimistic cache update, and WebSocket invalidation or event handler. The API persists an activity record before it broadcasts the related live event.

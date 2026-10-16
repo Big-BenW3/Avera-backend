@@ -1,6 +1,6 @@
 /**
  * Buildspace API module: src/realtime/events.ts
- * Defines validated realtime event envelopes and the Redis Pub/Sub connection used for instance fan-out.
+ * Defines the validated realtime event envelope and the Redis Pub/Sub connection used for instance fan-out.
  */
 
 import { Redis } from "ioredis";
@@ -35,9 +35,4 @@ export function createRedis(config: Pick<AppConfig, "REDIS_URL">) {
   const client = new Redis(config.REDIS_URL, { maxRetriesPerRequest: null, lazyConnect: true });
   const subscriber = client.duplicate({ lazyConnect: true });
   return { client, subscriber };
-}
-
-// Publish a validated event to a channel waiting for that topic.
-export async function publishEvent(redis: Redis, event: RealtimeEvent): Promise<void> {
-  await redis.publish(`buildspace:${event.channel}`, JSON.stringify(event));
 }

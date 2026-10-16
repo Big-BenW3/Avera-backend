@@ -37,4 +37,4 @@ AUTH_JWT_SECRET=REPLACE_WITH_A_LONG_RANDOM_VALUE
 AUTH_SECURE_COOKIES=false
 ```
 
-After saving this file, run `npm run db:migrate`, then run `npm run dev` and `npm run worker` in a second terminal. Keep the `.env` file uncommitted.
+After saving this file, run `npm run db:migrate`, then run `npm run dev`. Keep the `.env` file uncommitted.

@@ -1,16 +1,14 @@
 # Avera — Deployment Guide
 
-Deploys three things: the **API**, the **worker**, and the **frontend**. The API is
+Deploys two things: the **API** and the **frontend**. The API is
 already live at `https://avera-backend.onrender.com`.
 
 ```
 Frontend  Vercel    ──HTTPS──▶  API  Render Web Service  ──▶  Neon Postgres
                                                      └──▶  Upstash Redis
-Worker   Render Background Worker ──▶  same Neon + Upstash
 ```
 
-The API and worker are **two separate services** from one repo. They share the same
-database and the same Redis.
+There is **no worker**. The backend is a single process started with `npm start`.
 
 ---
 
@@ -67,63 +65,37 @@ curl -s -o /dev/null -D - -H "Origin: https://avera.vercel.app" \
 
 ---
 
-## 1. Deploying the worker on Render
+## 1. API service settings on Render
 
-The worker (`src/jobs/worker.ts`) polls the `outbox_events` table for AI runs,
-executes them against the NVIDIA provider, writes the result, and publishes a
-`ai.completed` event to Redis. **Without it, AI runs sit at `pending` forever.**
-
-> BullMQ is in `package.json` but is **not** wired up — the worker polls Postgres
-> directly every 5 seconds. That's fine; it just means the worker is the only
-> thing processing the outbox.
-
-### Step 1 — Create the service
-
-Render dashboard → **New** → **Background Worker**.
+Single Web Service, native Node runtime. Node 22 is picked up automatically from
+the `engines` field in `package.json`.
 
 | Field | Value |
 |---|---|
-| Name | `avera-worker` |
+| Name | `avera-backend` |
 | Repository | `Big-BenW3/Avera-backend` |
 | Branch | `main` |
-| Runtime | Docker (see below) |
-
-**Background Workers require a paid instance type** — there is no free tier for
-them. Cheapest is `starter` at $7/mo.
-
-### Step 2 — Docker setup
-
-### Step 2 — Runtime: native Node (no Docker)
-
-Use Render's **Native** runtime — same as your existing API service. Node 22 is
-picked up automatically from the `engines` field in `package.json`.
-
-| Field | Value |
-|---|---|
 | Runtime | Node |
 | Build Command | `npm ci && npm run build` |
-| Start Command | `npm start:worker` |
-
-> **Do not use `npm run worker`** — that's `tsx src/jobs/worker.ts`, and `tsx` is a
-> devDependency. `npm start:worker` runs the compiled `dist/jobs/worker.js` and
-> only needs production dependencies.
+| Start Command | `npm start` |
+| Root Directory | *(blank)* |
+| Health Check Path | `/health/live` |
 
 `argon2` is the only native module in the tree, and it ships prebuilt binaries for
-linux-x64-glibc, which is what Render runs. Nothing to install.
+linux-x64-glibc, which is what Render runs. Nothing extra to install.
 
-Leave **Root Directory** blank — this repo *is* the backend.
+**There is no second service and no background worker.** If you created one while
+exploring this, delete it.
 
-### Step 3 — Worker environment
-
-Copy these from the API service. Same values, same keys:
+### Environment variables
 
 ```
 NODE_ENV=production
-DATABASE_URL=      (Neon connection string)
-REDIS_URL=         (Upstash ioredis URL)
-AUTH_JWT_SECRET=   (same 64-char secret)
-WEB_ORIGIN=        (not used by the worker, but required by the config schema)
-API_ORIGIN=
+DATABASE_URL=          (Neon connection string)
+REDIS_URL=             (Upstash ioredis URL)
+AUTH_JWT_SECRET=       (openssl rand -base64 48)
+API_ORIGIN=https://avera-backend.onrender.com
+WEB_ORIGIN=https://avera.vercel.app
 PORT=4000
 LOG_LEVEL=info
 AUTH_SESSION_TTL_HOURS=168
@@ -131,35 +103,10 @@ AUTH_REFRESH_TTL_DAYS=30
 AUTH_COOKIE_NAME=avera_session
 AUTH_SECURE_COOKIES=true
 AUTH_COOKIE_SAMESITE=none
-NVIDIA_NIM_BASE_URL=  (needed — the worker calls the model)
-NVIDIA_NIM_API_KEY=   (needed)
-NVIDIA_NIM_MODEL_ID=
 ```
 
-The worker's config schema requires `DATABASE_URL`, `REDIS_URL`, and
-`AUTH_JWT_SECRET` even though it only uses the first two — **missing any of them
-crashes the worker on boot.**
-
-> ⚠️ Your local `.env` has `NVIDIA_NIM_API_KEY` **empty**. Without it the worker
-> picks up `ai.run` events, marks them `running`, then throws on the provider call
-> and retries every 60s forever. Add the key in Render before testing AI.
-
-### Step 5 — No health check for the worker
-
-It's a long-running process with no HTTP port. Leave the health check path blank.
-Watch its **Logs** tab for a silent, steady start — it prints nothing on success,
-which is expected.
-
-Confirm it's alive by generating AI work and watching for the run to leave
-`pending`:
-
-```sql
-select id, type, attempts, processed_at, available_at
-from outbox_events
-where processed_at is null
-order by created_at desc
-limit 10;
-```
+`DATABASE_URL`, `REDIS_URL`, and `AUTH_JWT_SECRET` are required -- the process
+crashes on boot without any of them. Everything else has a default.
 
 ---
 
@@ -266,7 +213,7 @@ fail. None block the deploy:
 | Feature | Missing |
 |---|---|
 | Calls | `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` |
-| AI | `NVIDIA_NIM_API_KEY`, `NVIDIA_NIM_MODEL_ID` (worker only) |
+| AI | `NVIDIA_NIM_API_KEY`, `NVIDIA_NIM_MODEL_ID` (no executor exists yet) |
 | File uploads | `S3_BUCKET`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` |
 | OAuth sign-in | `GITHUB_CLIENT_ID/SECRET`, `GOOGLE_CLIENT_ID/SECRET` |
 | GitHub webhooks | reuses `GITHUB_CLIENT_SECRET` as the HMAC key |

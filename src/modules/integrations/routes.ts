@@ -7,7 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
-import { designLinks, integrationConnections, outboxEvents } from "../../db/schema.js";
+import { designLinks, integrationConnections } from "../../db/schema.js";
 import { requireAuth, currentUserId } from "../../middleware/auth.js";
 import { webhookRateLimit } from "../../middleware/rate-limit.js";
 import type { AppEnv } from "../../types.js";
@@ -111,15 +111,6 @@ export function integrationRoutes() {
       .db.insert(designLinks)
       .values({ spaceId: access!.spaceId, provider: "figma", ...parsed.data })
       .returning();
-    await context
-      .get("database")
-      .db.insert(outboxEvents)
-      .values({
-        type: "ai.index_requested",
-        aggregateType: "design_link",
-        aggregateId: link!.id,
-        payload: { spaceId: access!.spaceId, sourceType: "design" },
-      });
     return context.json({ link }, 201);
   });
   // Accept signed GitHub webhook payloads. Public by design: verified via HMAC,

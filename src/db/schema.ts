@@ -809,23 +809,6 @@ export const contentReports = pgTable(
   (table) => [index("content_reports_status_idx").on(table.status, table.createdAt)],
 );
 
-// The transactional outbox makes notifications, AI indexing, and webhooks reliable.
-export const outboxEvents = pgTable(
-  "outbox_events",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    type: varchar("type", { length: 100 }).notNull(),
-    aggregateType: varchar("aggregate_type", { length: 64 }).notNull(),
-    aggregateId: uuid("aggregate_id").notNull(),
-    payload: jsonb("payload").notNull().default({}),
-    availableAt: timestamp("available_at", { withTimezone: true }).notNull().defaultNow(),
-    processedAt: timestamp("processed_at", { withTimezone: true }),
-    attempts: integer("attempts").notNull().default(0),
-    createdAt,
-  },
-  (table) => [index("outbox_events_ready_idx").on(table.processedAt, table.availableAt)],
-);
-
 export const idempotencyKeys = pgTable("idempotency_keys", {
   key: varchar("key", { length: 255 }).primaryKey(),
   userId: uuid("user_id")
