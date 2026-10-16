@@ -44,18 +44,21 @@ function service(context: {
 }
 
 // Set the session cookie with the security flags required for browser sessions.
+// SameSite=None is the only value that survives a cross-site deployment (frontend
+// and API on different apex domains), and browsers reject it without Secure.
 function sessionCookie(
   context: Parameters<typeof setCookie>[0],
   token: string,
   ttlHours: number,
   secure: boolean,
   name: string,
+  sameSite: "lax" | "strict" | "none",
 ) {
   const isProd = process.env.NODE_ENV === "production";
   setCookie(context, name, token, {
     httpOnly: true,
-    sameSite: "Lax",
-    secure: secure || isProd,
+    sameSite: sameSite === "lax" ? "Lax" : sameSite === "strict" ? "Strict" : "None",
+    secure: sameSite === "none" ? true : secure || isProd,
     path: "/",
     maxAge: ttlHours * 60 * 60,
   });
@@ -241,6 +244,7 @@ export function authRoutes() {
         config.AUTH_SESSION_TTL_HOURS,
         config.AUTH_SECURE_COOKIES,
         config.AUTH_COOKIE_NAME,
+        config.AUTH_COOKIE_SAMESITE,
       );
       return context.json({ user, requiresMfa: false }, 201);
     } catch (error) {
@@ -293,6 +297,7 @@ export function authRoutes() {
       config.AUTH_SESSION_TTL_HOURS,
       config.AUTH_SECURE_COOKIES,
       config.AUTH_COOKIE_NAME,
+      config.AUTH_COOKIE_SAMESITE,
     );
     return context.json({ user, requiresMfa: false }, 200);
   });
@@ -347,6 +352,7 @@ export function authRoutes() {
       config.AUTH_SESSION_TTL_HOURS,
       config.AUTH_SECURE_COOKIES,
       config.AUTH_COOKIE_NAME,
+      config.AUTH_COOKIE_SAMESITE,
     );
     return context.json({ user, requiresMfa: false }, 200);
   });
@@ -441,7 +447,22 @@ export function authRoutes() {
     const config = context.get("config");
     const token = getCookie(context, config.AUTH_COOKIE_NAME);
     if (token) await service(context).revokeSession(token);
-    deleteCookie(context, config.AUTH_COOKIE_NAME, { path: "/" });
+    // Match the attributes used when setting the cookie, otherwise the browser
+    // keeps the original cookie and the user stays signed in.
+    deleteCookie(context, config.AUTH_COOKIE_NAME, {
+      path: "/",
+      httpOnly: true,
+      sameSite:
+        config.AUTH_COOKIE_SAMESITE === "lax"
+          ? "Lax"
+          : config.AUTH_COOKIE_SAMESITE === "strict"
+            ? "Strict"
+            : "None",
+      secure:
+        config.AUTH_COOKIE_SAMESITE === "none" ||
+        config.AUTH_SECURE_COOKIES ||
+        process.env.NODE_ENV === "production",
+    });
     return context.body(null, 204);
   });
 

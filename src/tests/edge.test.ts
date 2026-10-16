@@ -197,7 +197,8 @@ describe("discovery/people/ideas edge", () => {
     expect(clearedBody.bookmarkedIdeaIds).not.toContain(ideaId);
   });
   it("cors echoes allowlisted Origin and omits unknown origins", async () => {
-    const allowedOrigin = ctx.config.WEB_ORIGIN[0];
+    // The test harness always loads a non-empty WEB_ORIGIN allowlist.
+    const allowedOrigin = ctx.config.WEB_ORIGIN[0]!;
     const ok = await ctx.app.request("/api/v1/discover/announcements", {
       headers: { Origin: allowedOrigin },
     });

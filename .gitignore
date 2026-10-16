@@ -10,8 +10,11 @@ coverage/
 npm-debug.log*
 .DS_Store
 
-# drizzle metadata (generated)
-drizzle/meta/
+# drizzle metadata: the journal and snapshots MUST be committed, otherwise
+# `drizzle-kit migrate` has no migration order on a fresh clone (deploy hosts).
+# Only the transient artifacts are ignored.
+drizzle/meta/*.json.tmp
+drizzle/meta/README.md
 
 # environment files (never commit secrets)
 .env

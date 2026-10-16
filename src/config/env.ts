@@ -37,6 +37,9 @@ export const environmentSchema = z.object({
     .enum(["true", "false"])
     .default("false")
     .transform((value) => value === "true"),
+  // Browsers only attach the session cookie to cross-site fetches when SameSite=None,
+  // which requires HTTPS. Keep "lax" once the frontend and API share one apex domain.
+  AUTH_COOKIE_SAMESITE: z.enum(["lax", "strict", "none"]).default("lax"),
   S3_REGION: z.string().default("us-east-1"),
   S3_BUCKET: z.string().optional(),
   S3_ENDPOINT: optionalUrl,
