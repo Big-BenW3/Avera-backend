@@ -76,13 +76,21 @@ the `engines` field in `package.json`.
 | Repository | `Big-BenW3/Avera-backend` |
 | Branch | `main` |
 | Runtime | Node |
-| Build Command | `npm ci && npm run build` |
+| Build Command | `npm run build:ci` |
 | Start Command | `npm start` |
 | Root Directory | *(blank)* |
 | Health Check Path | `/health/live` |
 
 `argon2` is the only native module in the tree, and it ships prebuilt binaries for
 linux-x64-glibc, which is what Render runs. Nothing extra to install.
+
+> **Use `npm run build:ci`, not `npm ci && npm run build`.** `build:ci` runs
+> `npm ci --include=dev && npm run build`. Because this service sets
+> `NODE_ENV=production`, a bare `npm ci` **prunes devDependencies** — which strips
+> `typescript` and `@types/ws`. The build then fails with
+> `TS7016: Could not find a declaration file for module 'ws'`.
+> `--include=dev` overrides that. `NODE_ENV` is a runtime setting; it must never
+> decide what the build can see.
 
 **There is no second service and no background worker.** If you created one while
 exploring this, delete it.
